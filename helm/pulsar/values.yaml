@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: sapcc/pulsar
+  tag: v201912111541
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  annotations:
+    vice-president: "true"
+
+  hosts:
+    - pulsar.evil.corp
+
+config:
+  slack:
+    # botToken:
+    # botID:
+    # accessToken:
+    # verificationToken:
+    authorizedUserGroupNames: []
+
+  pagerduty: {}
+    # defaultEmail:
+    # authToken:
