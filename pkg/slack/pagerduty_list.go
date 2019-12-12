@@ -61,7 +61,7 @@ func (l *pagerdutyList) Keywords() []string {
 }
 
 func (l *pagerdutyList) Run(msg slack.Msg) (slack.Msg, error) {
-	f := &clients.IncidentFilter{}
+	f := &clients.Filter{}
 	// If the message contains a cluster name filter incidents accordingly.
 	f.ClusterFilterFromText(msg.Text)
 

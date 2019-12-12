@@ -93,11 +93,11 @@ func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) 
 }
 
 // ListIncidents returns a list of incidents matching the given filter or an error.
-func (c *PagerdutyClient) ListIncidents(f *IncidentFilter) ([]pagerduty.Incident, error) {
+func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error) {
 	o := pagerduty.ListIncidentsOptions{
 		Statuses: []string{statusTriggered},
 		APIListObject: pagerduty.APIListObject{
-			Limit: 100,
+			Limit: f.GetLimit(),
 		},
 	}
 
@@ -112,6 +112,22 @@ func (c *PagerdutyClient) ListIncidents(f *IncidentFilter) ([]pagerduty.Incident
 	}
 
 	return f.FilterIncidents(incidentList.Incidents), nil
+}
+
+// GetIncident returns the latest incident matching the filter or an error.
+func (c *PagerdutyClient) GetIncident(f *Filter) (*pagerduty.Incident, error) {
+	// Return the most recent incident.
+	f.SetLimit(1)
+	incidentList, err := c.ListIncidents(f)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(incidentList) == 0 {
+		return nil, errors.New("no incident found")
+	}
+
+	return &incidentList[0], nil
 }
 
 // AcknowledgeIncident sets a incident to status acknowledged and assigns the given user to it.

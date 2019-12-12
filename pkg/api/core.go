@@ -32,20 +32,26 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/auth"
+	"github.com/sapcc/pulsar/pkg/clients"
 	"github.com/sapcc/pulsar/pkg/config"
 )
 
 const (
-	actionType            = "button"
-	actionName            = "reaction"
+	actionType = "button"
+	actionName = "reaction"
+
 	actionTypeAcknowledge = "acknowledge"
+	acknowledgeString     = "Acknowledged by <@%s>"
+	emojiFirefighter      = "male-firefighter"
 )
 
 // API ...
 type API struct {
-	authorizer *auth.Authorizer
-	cfg        *config.SlackConfig
-	logger     log.Logger
+	authorizer  *auth.Authorizer
+	slackClient *clients.SlackClient
+	pdClient *clients.PagerdutyClient
+	cfg         *config.SlackConfig
+	logger      log.Logger
 }
 
 // New returns a new API or an error.
@@ -121,22 +127,67 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := handleActionCallback(message.ActionCallback); err != nil {
+	if err := a.handleInteractionCallback(message); err != nil {
 		level.Error(a.logger).Log("msg", "error handeling message", "err", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func handleActionCallback(actionCallbacks slack.ActionCallbacks) error {
+func (a *API) handleInteractionCallback(message slack.InteractionCallback) error {
+	actionCallbacks := message.ActionCallback
 	for _, act := range actionCallbacks.AttachmentActions {
+		// Consider only button clicks.
+		if act.Name != actionName || act.Type != actionType {
+			continue
+		}
+
 		switch act.Name {
-		case "":
-			// TODO:
+		case actionTypeAcknowledge:
+			// Post the message.
+			if _, _, err := a.slackClient.PostMessage(
+				message.Channel.ID,
+				slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), true),
+				slack.MsgOptionTS(message.OriginalMessage.Timestamp),
+			); err != nil {
+				return err
+			}
+
+			// Add reaction emoji.
+			if err := a.slackClient.AddReactionToMessage(
+				message.Channel.ID,
+				message.OriginalMessage.Timestamp,
+				emojiFirefighter,
+			); err != nil {
+				return err
+			}
+
+			user, err := a.pdClient.GetUserByEmail(message.User.Profile.Email)
+			if err != nil {
+				return err
+			}
+
+			f := &clients.Filter{}
+			f.ClusterFilterFromText(message.OriginalMessage.Text)
+			f.AlertnameFilterFromText(message.OriginalMessage.Text)
+
+			incident, err := a.pdClient.GetIncident(f)
+			if err != nil {
+				return err
+			}
+
+			return a.pdClient.AcknowledgeIncident(incident.ID, user)
 		}
 	}
 
 	for _, act := range actionCallbacks.BlockActions {
+		// Consider only button clicks.
+		if act.Type != actionType {
+			continue
+		}
+
 		//TODO:
 		fmt.Println(act.Text)
 	}

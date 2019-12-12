@@ -65,10 +65,21 @@ func (s *SlackClient) NewRTM(options ...slack.RTMOption) *slack.RTM {
 
 // PostMessage posts a message to the specified channel.
 func (s *SlackClient) PostMessage(channelID string, options ...slack.MsgOption) (string, string, error) {
-	return s.client.PostMessage(channelID, options...)
+	opts := []slack.MsgOption{
+		slack.MsgOptionUsername(s.cfg.BotID),
+		slack.MsgOptionAsUser(true),
+	}
+
+	return s.client.PostMessage(channelID, append(opts, options...)...)
 }
 
 // GetUserByEmail returns the user or an error.
 func (s *SlackClient) GetUserByEmail(email string) (*slack.User, error) {
 	return s.client.GetUserByEmail(email)
+}
+
+// AddReactionToMessage adds a reaction emoji to an existing message.
+func (s *SlackClient) AddReactionToMessage(channel, timestamp, reaction string) error {
+	msgRef := slack.NewRefToMessage(channel, timestamp)
+	return s.client.AddReaction(reaction, msgRef)
 }

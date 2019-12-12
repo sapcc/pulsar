@@ -1,23 +1,34 @@
 package clients
 
 import (
+	"regexp"
+
 	"github.com/sapcc/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
-	"regexp"
 )
 
-const clusterRegex = `([\w-]*\w{2}-\w{2}-\d)|admin|staging`
+const clusterRegex = `[\w-]*\w{2}-\w{2}-\d|admin|staging`
 
-// IncidentFilter can be used to filter Pagerduty incidents.
-type IncidentFilter struct {
+// Filter can be used to filter Pagerduty incidents.
+type Filter struct {
+	// Alertname is the alertname to filter for.
 	Alertname,
+
+	// Severity of alerts/instance to filter for.
 	Severity,
+
+	// Fingerprint of the alert(s) to filter for.
 	Fingerprint string
+
+	// Clusters to filter for
 	Clusters []string
+
+	// limit is the number of items per response. Use
+	limit *uint
 }
 
 // ClusterFilterFromText takes a string potentially containing cluster names and creates the filter accordingly.
-func (f *IncidentFilter) ClusterFilterFromText(theString string) error {
+func (f *Filter) ClusterFilterFromText(theString string) error {
 	r, err := regexp.Compile(clusterRegex)
 	if err != nil {
 		return err
@@ -28,12 +39,23 @@ func (f *IncidentFilter) ClusterFilterFromText(theString string) error {
 	return nil
 }
 
+// AlertnameFilterFromText takes a string potentially containing an alertname and creates the filter accordingly.
+func (f *Filter) AlertnameFilterFromText(theString string) error {
+	_, alertname, err := parseRegionAndAlertnameFromText(theString)
+	if err != nil {
+		return err
+	}
+
+	f.Alertname = normalizeString(alertname)
+	return nil
+}
+
 // FilterIncidents does what it says.
-func (f *IncidentFilter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Incident {
+func (f *Filter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Incident {
 	res := make([]pagerduty.Incident, 0)
 
 	for _, inc := range incidents {
-		region, alertname, err := parseRegionAndAlertnameFromPagerdutySummary(inc.Summary)
+		region, alertname, err := parseRegionAndAlertnameFromText(inc.Summary)
 		if err != nil {
 			continue
 		}
@@ -55,7 +77,20 @@ func (f *IncidentFilter) FilterIncidents(incidents []pagerduty.Incident) []pager
 	return res
 }
 
-func (f *IncidentFilter) normalizeClusters() {
+// SetLimit sets the limit of items per response.
+func (f *Filter) SetLimit(limit uint) {
+	f.limit = &limit
+}
+
+// GetLimit returns the current limit of items per response.
+func (f *Filter) GetLimit() uint {
+	if f.limit != nil {
+		return *f.limit
+	}
+	return 100
+}
+
+func (f *Filter) normalizeClusters() {
 	for idx, c := range f.Clusters {
 		f.Clusters[idx] = normalizeString(c)
 	}

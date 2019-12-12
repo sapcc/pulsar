@@ -19,7 +19,7 @@ func TestFilterIncidents(t *testing.T) {
 		{APIObject: pagerduty.APIObject{Summary: summaryTextMultiple}},
 	}
 
-	f := &IncidentFilter{
+	f := &Filter{
 		Clusters:  []string{"eu-de-1"},
 		Alertname: "VVOLDatastoreNotAccessibleFromHost",
 	}

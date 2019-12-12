@@ -27,12 +27,12 @@ import (
 )
 
 // regionAlertnameRegex is used to find the region and alertname from an incident text
-const regionAlertnameRegex = `.*\s\[(?P<region>.+?)\]\s(?P<alertname>.+?)\s\-.*`
+const regionAlertnameRegex = `.*\s\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\]\s(?P<alertname>.+?)\s\-.*`
 
-// parseRegionAndAlertnameFromPagerdutySummary does what it says.
+// parseRegionAndAlertnameFromText does what it says.
 // It's meant as a workaround until Fingerprints for Prometheus alerts are supported.
 // Returns an error if neither alertname nor region can be found.
-func parseRegionAndAlertnameFromPagerdutySummary(summary string) (string, string, error) {
+func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
 	regionAlertnameRegex := regexp.MustCompile(regionAlertnameRegex)
 	matchMap := make(map[string]string)
 
