@@ -25,6 +25,10 @@ spec:
               containerPort: 80
               protocol: TCP
           env:
+            - name: DEBUG
+              value: {{ default false .Values.isDebug | quote }}
+            - name: API_PORT
+              value: {{ required ".Values.service.port missing" .Values.service.port | quote }}
             - name: SLACK_BOT_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -34,7 +38,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "pulsar.fullname" . }}-secret
-                  key: slac-bot-id
+                  key: slack-bot-id
             - name: SLACK_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:

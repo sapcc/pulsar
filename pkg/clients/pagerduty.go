@@ -22,7 +22,6 @@ package clients
 import (
 	"fmt"
 	"github.com/sapcc/pulsar/pkg/util"
-	"os"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -69,15 +68,12 @@ func NewPagerdutyClient(cfg *config.PagerdutyConfig, logger log.Logger) (*Pagerd
 }
 
 func NewPagerdutyClientFromEnv() (*PagerdutyClient, error) {
-	logger := log.NewLogfmtLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
-
 	cfg, err := config.NewPagerdutyConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewPagerdutyClient(cfg, logger)
+	return NewPagerdutyClient(cfg, util.NewLogger())
 }
 
 // GetUserByEmail returns the pagerduty user for the given email or an error.

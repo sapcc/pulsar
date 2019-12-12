@@ -29,15 +29,13 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/gorilla/mux"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/config"
 )
 
 const (
-	apiPath           = "/interaction"
-	headerContentType = "Content-Type"
-
 	actionType            = "button"
 	actionName            = "reaction"
 	actionTypeAcknowledge = "acknowledge"
@@ -59,7 +57,11 @@ func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger
 	}, nil
 }
 
+// Serve ...
 func (a *API) Serve(stop <-chan struct{}) {
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", a.home)
+	router.HandleFunc("/interaction", a.handleInteraction).Methods(http.MethodPost)
 
 	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", a.cfg.APIHost, a.cfg.APIPort))
 	if err != nil {
@@ -69,14 +71,17 @@ func (a *API) Serve(stop <-chan struct{}) {
 	defer ln.Close()
 
 	level.Info(a.logger).Log("msg", "serving API", "host", a.cfg.APIHost, "port", a.cfg.APIPort)
-
-	http.Handle(apiPath, a)
-	go http.Serve(ln, nil)
+	go http.Serve(ln, router)
 	<-stop
 }
 
-// Serve handles interactive slack requests.
-func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a *API) home(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
+}
+
+// handles interactive slack requests.
+func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		level.Debug(a.logger).Log("msg", "invalid request with method", "method", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -116,16 +121,14 @@ func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newMessage := handleActionCallback(message.ActionCallback)
-
-	if err := respond(w, newMessage); err != nil {
-		level.Error(a.logger).Log("msg", "error marshalling message", "err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Del(headerContentType)
+	if err := handleActionCallback(message.ActionCallback); err != nil {
+		level.Error(a.logger).Log("msg", "error handeling message", "err", err.Error())
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
-func handleActionCallback(actionCallbacks slack.ActionCallbacks) slack.Message {
+func handleActionCallback(actionCallbacks slack.ActionCallbacks) error {
 	for _, act := range actionCallbacks.AttachmentActions {
 		switch act.Name {
 		case "":
@@ -138,11 +141,5 @@ func handleActionCallback(actionCallbacks slack.ActionCallbacks) slack.Message {
 		fmt.Println(act.Text)
 	}
 
-	return slack.Message{}
-}
-
-func respond(w http.ResponseWriter, message slack.Message) error {
-	w.Header().Add(headerContentType, "application/json")
-	w.WriteHeader(http.StatusOK)
-	return json.NewEncoder(w).Encode(&message)
+	return nil
 }

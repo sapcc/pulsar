@@ -1,13 +1,15 @@
 replicaCount: 1
 
+isDebug: false
+
 image:
   repository: sapcc/pulsar
-  tag: v201912111541
+  tag: v201912121525
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   annotations:

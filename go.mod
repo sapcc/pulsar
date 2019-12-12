@@ -7,6 +7,7 @@ require (
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/gorilla/mux v1.7.3
 	github.com/nlopes/slack v0.6.0
 	github.com/pkg/errors v0.8.0
 	github.com/sapcc/go-pagerduty v0.0.0-20190215101515-304f7ea6b5b6

@@ -20,12 +20,11 @@
 package clients
 
 import (
-	"os"
-
 	"github.com/go-kit/kit/log"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sapcc/pulsar/pkg/config"
+	"github.com/sapcc/pulsar/pkg/util"
 )
 
 // SlackClient ...
@@ -51,15 +50,12 @@ func NewSlackClient(cfg *config.SlackConfig, logger log.Logger) (*SlackClient, e
 
 // NewSlackClientFromEnv get's the configuration from the environment and returns a new SlackClient or an error.
 func NewSlackClientFromEnv() (*SlackClient, error) {
-	logger := log.NewLogfmtLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
-
 	cfg, err := config.NewSlackConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewSlackClient(cfg, logger)
+	return NewSlackClient(cfg, util.NewLogger())
 }
 
 // NewRTM returns a new RTM client.
