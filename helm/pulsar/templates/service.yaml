@@ -5,9 +5,9 @@ metadata:
   labels:
     {{- include "pulsar.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ required ".Values.service.type missing" .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ required ".Values.service.port missing" .Values.service.port }}
       targetPort: http
       protocol: TCP
       name: http
