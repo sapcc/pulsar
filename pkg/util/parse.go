@@ -19,23 +19,17 @@
 
 package util
 
-import (
-	"os"
+import "regexp"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-)
+const clusterRegex = `[\w-]*\w{2}-\w{2}-\d|admin|staging`
 
-// NewLogger returns a new Logger with log level configured.
-func NewLogger() log.Logger {
-	logger := log.NewLogfmtLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
-
-	logLevel := level.AllowInfo()
-	if v, ok := os.LookupEnv("DEBUG"); ok && v != "false" {
-		logLevel = level.AllowDebug()
+// ParseClusterFromString is self-explanatory.
+func ParseClusterFromString(theString string) ([]string, error) {
+	r, err := regexp.Compile(clusterRegex)
+	if err != nil {
+		return nil, err
 	}
-	level.NewFilter(logger, logLevel)
 
-	return logger
+	clusters := r.FindAllString(theString, -1)
+	return NormalizeStringSlice(clusters), nil
 }

@@ -1,13 +1,9 @@
 package clients
 
 import (
-	"regexp"
-
 	"github.com/sapcc/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
 )
-
-const clusterRegex = `[\w-]*\w{2}-\w{2}-\d|admin|staging`
 
 // Filter can be used to filter Pagerduty incidents.
 type Filter struct {
@@ -29,13 +25,11 @@ type Filter struct {
 
 // ClusterFilterFromText takes a string potentially containing cluster names and creates the filter accordingly.
 func (f *Filter) ClusterFilterFromText(theString string) error {
-	r, err := regexp.Compile(clusterRegex)
+	clusters, err := util.ParseClusterFromString(theString)
 	if err != nil {
 		return err
 	}
-
-	f.Clusters = r.FindAllString(theString, -1)
-	f.normalizeClusters()
+	f.Clusters = clusters
 	return nil
 }
 
@@ -46,7 +40,7 @@ func (f *Filter) AlertnameFilterFromText(theString string) error {
 		return err
 	}
 
-	f.Alertname = normalizeString(alertname)
+	f.Alertname = util.NormalizeString(alertname)
 	return nil
 }
 
@@ -65,7 +59,7 @@ func (f *Filter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Inc
 			keep = false
 		}
 
-		if f.Alertname != "" && normalizeString(f.Alertname) != alertname {
+		if f.Alertname != "" && util.NormalizeString(f.Alertname) != alertname {
 			keep = false
 		}
 
@@ -88,10 +82,4 @@ func (f *Filter) GetLimit() uint {
 		return *f.limit
 	}
 	return 100
-}
-
-func (f *Filter) normalizeClusters() {
-	for idx, c := range f.Clusters {
-		f.Clusters[idx] = normalizeString(c)
-	}
 }

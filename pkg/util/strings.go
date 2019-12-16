@@ -19,23 +19,19 @@
 
 package util
 
-import (
-	"os"
+import "strings"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-)
-
-// NewLogger returns a new Logger with log level configured.
-func NewLogger() log.Logger {
-	logger := log.NewLogfmtLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
-
-	logLevel := level.AllowInfo()
-	if v, ok := os.LookupEnv("DEBUG"); ok && v != "false" {
-		logLevel = level.AllowDebug()
+// NormalizeStringSlice normalizes all strings of the given slice.
+func NormalizeStringSlice(sslice []string) []string {
+	res := make([]string, len(sslice))
+	for idx, s := range sslice {
+		res[idx] = NormalizeString(s)
 	}
-	level.NewFilter(logger, logLevel)
+	return res
+}
 
-	return logger
+// NormalizeString trims spaces and returns the string in lower case.
+func NormalizeString(theString string) string {
+	theString = strings.ToLower(theString)
+	return strings.TrimSpace(theString)
 }

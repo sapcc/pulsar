@@ -21,7 +21,6 @@ package clients
 
 import (
 	"fmt"
-	"github.com/sapcc/pulsar/pkg/util"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -29,6 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sapcc/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/config"
+	"github.com/sapcc/pulsar/pkg/util"
 )
 
 const (
@@ -228,7 +228,7 @@ func (c *PagerdutyClient) GetSchedule(scheduleName string) (*pagerduty.Schedule,
 	}
 
 	for _, sched := range scheduleList.Schedules {
-		if normalizeString(sched.Name) == normalizeString(scheduleName) {
+		if util.NormalizeString(sched.Name) == util.NormalizeString(scheduleName) {
 			return &sched, nil
 		}
 	}

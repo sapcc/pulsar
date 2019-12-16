@@ -22,6 +22,7 @@ package clients
 import (
 	"fmt"
 	"github.com/sapcc/go-pagerduty"
+	"github.com/sapcc/pulsar/pkg/util"
 	"regexp"
 	"strings"
 )
@@ -56,12 +57,7 @@ func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
 		return "", "", fmt.Errorf("pagerduty incident summary doesn not contain alertname and/or region: '%s'", summary)
 	}
 
-	return normalizeString(region), normalizeString(alertname), nil
-}
-
-func normalizeString(theString string) string {
-	theString = strings.ToLower(theString)
-	return strings.TrimSpace(theString)
+	return util.NormalizeString(region), util.NormalizeString(alertname), nil
 }
 
 func containsUser(userList []*pagerduty.User, user pagerduty.APIObject) bool {

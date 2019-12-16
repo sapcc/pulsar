@@ -17,25 +17,24 @@
 *
 *******************************************************************************/
 
-package util
+package config
 
-import (
-	"os"
+import "os"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-)
+// K8sConfig ...
+type K8sConfig struct {
+	// Path to kubeconfig.
+	KubeConfig string
+}
 
-// NewLogger returns a new Logger with log level configured.
-func NewLogger() log.Logger {
-	logger := log.NewLogfmtLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
-
-	logLevel := level.AllowInfo()
-	if v, ok := os.LookupEnv("DEBUG"); ok && v != "false" {
-		logLevel = level.AllowDebug()
+// NewK8sConfigFromEnv returns a new K8sConfig or an error.
+func NewK8sConfigFromEnv() (*K8sConfig, error) {
+	k := &K8sConfig{
+		KubeConfig: os.Getenv("KUBECONFIG"),
 	}
-	level.NewFilter(logger, logLevel)
+	return k, k.validate()
+}
 
-	return logger
+func (k *K8sConfig) validate() error {
+	return nil
 }

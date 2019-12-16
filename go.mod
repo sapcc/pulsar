@@ -12,7 +12,10 @@ require (
 	github.com/pkg/errors v0.8.0
 	github.com/sapcc/go-pagerduty v0.0.0-20190215101515-304f7ea6b5b6
 	github.com/spf13/cobra v0.0.5
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.4.0
+	k8s.io/api v0.17.0
+	k8s.io/apimachinery v0.17.0
+	k8s.io/client-go v0.17.0
 )
 
 replace github.com/nlopes/slack => github.com/nlopes/slack v0.6.1-0.20191106133607-d06c2a2b3249
