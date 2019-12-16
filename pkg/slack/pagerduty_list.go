@@ -60,14 +60,14 @@ func (l *pagerdutyList) Keywords() []string {
 	return []string{"list incidents", "incident list"}
 }
 
-func (l *pagerdutyList) Run(msg slack.Msg) (slack.Msg, error) {
+func (l *pagerdutyList) Run(msg *slack.Msg) (*slack.Msg, error) {
 	f := &clients.Filter{}
 	// If the message contains a cluster name filter incidents accordingly.
 	f.ClusterFilterFromText(msg.Text)
 
 	incidentList, err := l.pagerdutyClient.ListIncidents(f)
 	if err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	if len(incidentList) == 0 {
@@ -77,7 +77,7 @@ func (l *pagerdutyList) Run(msg slack.Msg) (slack.Msg, error) {
 		}
 		response += " :green_heart:"
 
-		return slack.Msg{Text: response}, nil
+		return &slack.Msg{Text: response}, nil
 	}
 
 	data := [][]string{{"Summary", "Started"}}

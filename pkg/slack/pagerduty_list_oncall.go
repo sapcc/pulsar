@@ -69,19 +69,19 @@ func (l *pagerdutyListOnCall) Keywords() []string {
 	return []string{"list oncall", "list on-call", "list on call", "who's on call", "who's on-call"}
 }
 
-func (l *pagerdutyListOnCall) Run(msg slack.Msg) (slack.Msg, error) {
+func (l *pagerdutyListOnCall) Run(msg *slack.Msg) (*slack.Msg, error) {
 	schedule, err := l.pagerdutyClient.GetSchedule(scheduleName)
 	if err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	onCallUserList, err := l.pagerdutyClient.ListTodaysOnCallUsers(&schedule.ID)
 	if err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	if len(onCallUserList) == 0 {
-		return slack.Msg{Text: "There's no one on-call right now."}, nil
+		return &slack.Msg{Text: "There's no one on-call right now."}, nil
 	}
 
 	users := make([]string, 0)
@@ -91,5 +91,5 @@ func (l *pagerdutyListOnCall) Run(msg slack.Msg) (slack.Msg, error) {
 		}
 	}
 
-	return slack.Msg{Text: "Currently on call: " + strings.Join(users, ", ")}, nil
+	return &slack.Msg{Text: "Currently on call: " + strings.Join(users, ", ")}, nil
 }

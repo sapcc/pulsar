@@ -54,7 +54,7 @@ func (h *helpCommand) Describe() string {
 	return "Help for all commands"
 }
 
-func (h *helpCommand) Run(msg slack.Msg) (slack.Msg, error) {
+func (h *helpCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	commands := [][]string{
 		{"*Command*", "*Description*"},
 	}

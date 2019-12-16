@@ -61,7 +61,7 @@ func (o *openIncidentCommand) Keywords() []string {
 	return []string{"open incident", "create incident", "new incident"}
 }
 
-func (o *openIncidentCommand) Run(msg slack.Msg) (slack.Msg, error) {
+func (o *openIncidentCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	incident := models.NewIncident(
 		util.TrimAnyPrefix(o.Keywords(), msg.Text),
 		models.NewUser(models.Reporter, fmt.Sprintf("<@%s>", msg.User)),

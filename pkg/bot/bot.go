@@ -130,12 +130,12 @@ func (b *Bot) handleMessageEvent(e *slack.MessageEvent) error {
 			}
 
 			atLeastOneCommand = true
-			response, err := c.Run(e.Msg)
+			response, err := c.Run(&e.Msg)
 			if err != nil {
 				return err
 			}
 
-			if err := b.respond(response, e.Msg); err != nil {
+			if err := b.respond(response, &e.Msg); err != nil {
 				return err
 			}
 		}
@@ -145,15 +145,15 @@ func (b *Bot) handleMessageEvent(e *slack.MessageEvent) error {
 		return nil
 	}
 
-	response, err := b.helpCommand.Run(e.Msg)
+	response, err := b.helpCommand.Run(&e.Msg)
 	if err != nil {
 		return err
 	}
 
-	return b.respond(response, e.Msg)
+	return b.respond(response, &e.Msg)
 }
 
-func (b *Bot) respond(msg, originalMsg slack.Msg) error {
+func (b *Bot) respond(msg, originalMsg *slack.Msg) error {
 	opts := []slack.MsgOption{
 		slack.MsgOptionUsername(b.botID),
 		slack.MsgOptionAsUser(true),
@@ -170,5 +170,4 @@ func (b *Bot) respond(msg, originalMsg slack.Msg) error {
 
 	_, _, err := b.client.PostMessage(originalMsg.Channel, opts...)
 	return err
-	//b.rtmClient.SendMessage(b.rtmClient.NewOutgoingMessage(msg.Text, originalMsg.Channel))
 }

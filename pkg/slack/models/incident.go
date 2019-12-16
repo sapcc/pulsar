@@ -76,7 +76,7 @@ func (i *Incident) Close() {
 	i.statusEmoji = emojiGreenCheckmark
 }
 
-func (i *Incident) ToSlackMessage() slack.Msg {
+func (i *Incident) ToSlackMessage() *slack.Msg {
 	blocks := make([]slack.Block, 0)
 
 	// Header block with title and involved users.
@@ -114,5 +114,5 @@ func (i *Incident) ToSlackMessage() slack.Msg {
 	)
 
 	blockMsg := slack.NewBlockMessage(blocks...)
-	return blockMsg.Msg
+	return &blockMsg.Msg
 }

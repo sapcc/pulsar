@@ -64,26 +64,26 @@ func (h *listNodesCommand) Keywords() []string {
 }
 
 // Run takes the slack message triggering the command and returns a slack message containing the response.
-func (h *listNodesCommand) Run(msg slack.Msg) (slack.Msg, error) {
+func (h *listNodesCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	clusters, err := util.ParseClusterFromString(msg.Text)
 	if err != nil {
-		return slack.Msg{}, nil
+		return nil, err
 	}
 
 	// Just the first cluster.
 	clusterName := clusters[0]
 
 	if err := h.k8sClient.SetContext(clusterName); err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	nodeList, err := h.k8sClient.ListNodes()
 	if err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	if len(nodeList) == 0 {
-		return slack.Msg{Text: fmt.Sprintf("No nodes in cluster %s found.", clusterName)}, nil
+		return &slack.Msg{Text: fmt.Sprintf("No nodes in cluster %s found.", clusterName)}, nil
 	}
 
 	values := [][]string{

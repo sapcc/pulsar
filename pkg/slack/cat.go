@@ -54,19 +54,19 @@ func (c *catCommand) Keywords() []string {
 	return []string{"cat", "kitty"}
 }
 
-func (c *catCommand) Run(msg slack.Msg) (slack.Msg, error) {
+func (c *catCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	resp, err := http.Get("https://api.thecatapi.com/api/images/get?format=xml&size=med&results_per_page=1")
 	if err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return slack.Msg{}, fmt.Errorf("received reponse with status code: %v", resp.StatusCode)
+		return nil, fmt.Errorf("received reponse with status code: %v", resp.StatusCode)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return slack.Msg{}, errors.Wrap(err, "failed to read response")
+		return nil, errors.Wrap(err, "failed to read response")
 	}
 	defer resp.Body.Close()
 
@@ -81,20 +81,20 @@ func (c *catCommand) Run(msg slack.Msg) (slack.Msg, error) {
 	}
 
 	if err := xml.Unmarshal(data, &res); err != nil {
-		return slack.Msg{}, err
+		return nil, err
 	}
 
 	imgs := res.Data.Images
 	if len(imgs) == 0 {
-		return slack.Msg{}, errors.New("no cat picture found")
+		return nil, errors.New("no cat picture found")
 	}
 
 	imgURL := imgs[0].Image.URL
 	if imgURL == "" {
-		return slack.Msg{}, errors.New("no cat picture found")
+		return nil, errors.New("no cat picture found")
 	}
 
-	return slack.Msg{
+	return &slack.Msg{
 		Text: fmt.Sprintf("Here's a cute cat pic for you:\n%s", imgURL),
 	}, nil
 }

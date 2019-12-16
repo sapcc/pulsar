@@ -42,7 +42,7 @@ type Command interface {
 	IsDisabled() bool
 
 	// Run executes the command and returns the response or an error.
-	Run(originalMsg slack.Msg) (slack.Msg, error)
+	Run(originalMsg *slack.Msg) (*slack.Msg, error)
 }
 
 type CommandFactory func() Command

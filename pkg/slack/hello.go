@@ -57,7 +57,7 @@ func (h *helloCommand) Keywords() []string {
 }
 
 // Run takes the slack message triggering the command and returns a slack message containing the response.
-func (h *helloCommand) Run(msg slack.Msg) (slack.Msg, error) {
+func (h *helloCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 
 	greetings := []string{
 		fmt.Sprintf("What's up <@%s>?", msg.User),
@@ -67,5 +67,5 @@ func (h *helloCommand) Run(msg slack.Msg) (slack.Msg, error) {
 		fmt.Sprintf("Nice to meet you <@%s>.", msg.User),
 	}
 
-	return slack.Msg{Text: greetings[rand.Intn(len(greetings))]}, nil
+	return &slack.Msg{Text: greetings[rand.Intn(len(greetings))]}, nil
 }

@@ -27,7 +27,7 @@ import "github.com/nlopes/slack"
 //   {"headerColumn1", "headerColumn2"},
 //	 {"valueLine1", "valueLine2"},
 // }
-func ToSlackTable(values [][]string) slack.Msg {
+func ToSlackTable(values [][]string) *slack.Msg {
 	fields := make([]*slack.TextBlockObject, 0)
 	for _, v := range values {
 		for _, itm := range v {
@@ -37,5 +37,5 @@ func ToSlackTable(values [][]string) slack.Msg {
 
 	blocks := slack.Blocks{}
 	blocks.BlockSet = append(blocks.BlockSet, slack.NewSectionBlock(nil, fields, nil))
-	return slack.Msg{Blocks: blocks}
+	return &slack.Msg{Blocks: blocks}
 }
