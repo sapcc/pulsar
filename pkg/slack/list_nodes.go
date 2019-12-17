@@ -22,10 +22,10 @@ package slack
 import (
 	"fmt"
 	"github.com/nlopes/slack"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/bot"
 	"github.com/sapcc/pulsar/pkg/clients"
 	"github.com/sapcc/pulsar/pkg/util"
-	v1 "k8s.io/api/core/v1"
 )
 
 func init() {
@@ -38,33 +38,32 @@ type listNodesCommand struct {
 	k8sClient *clients.K8sClient
 }
 
-// Init can be used for additional initialization for the command.
-func (h *listNodesCommand) Init() error {
+func (l *listNodesCommand) Init() error {
 	k8sClient, err := clients.NewK8sClientFromEnv()
 	if err != nil {
 		return err
 	}
-	h.k8sClient = k8sClient
+	l.k8sClient = k8sClient
 	return nil
 }
 
-// IsDisabled can be used to (temporarily) disable the command.
-func (h *listNodesCommand) IsDisabled() bool {
+func (l *listNodesCommand) IsDisabled() bool {
 	return false
 }
 
-// Describe returns a brief help text for the command.
-func (h *listNodesCommand) Describe() string {
+func (l *listNodesCommand) Describe() string {
 	return "List nodes in a cluster."
 }
 
-// Keywords returns a list of keywords triggering the command.
-func (h *listNodesCommand) Keywords() []string {
+func (l *listNodesCommand) Keywords() []string {
 	return []string{"list nodes", "show nodes"}
 }
 
-// Run takes the slack message triggering the command and returns a slack message containing the response.
-func (h *listNodesCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
+func (l *listNodesCommand) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.KubernetesUser
+}
+
+func (l *listNodesCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	clusters, err := util.ParseClusterFromString(msg.Text)
 	if err != nil {
 		return nil, err
@@ -73,34 +72,17 @@ func (h *listNodesCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
 	// Just the first cluster.
 	clusterName := clusters[0]
 
-	if err := h.k8sClient.SetContext(clusterName); err != nil {
+	if err := l.k8sClient.SetContext(clusterName); err != nil {
 		return nil, err
 	}
 
-	nodeList, err := h.k8sClient.ListNodes()
+	res, err := l.k8sClient.ListNodes()
 	if err != nil {
 		return nil, err
 	}
 
-	if len(nodeList) == 0 {
-		return &slack.Msg{Text: fmt.Sprintf("No nodes in cluster %s found.", clusterName)}, nil
-	}
-
-	values := [][]string{
-		{"Node", "Ready"}, // Used as headers.
-	}
-	for _, node := range nodeList {
-		values = append(values, []string{node.Name, nodeReadyString(node)})
-	}
-
-	return util.ToSlackTable(values), nil
-}
-
-func nodeReadyString(node v1.Node) string {
-	for _, condition := range node.Status.Conditions {
-		if condition.Type == v1.NodeReady {
-			return fmt.Sprintf("%s: %s", condition.Type, condition.Status)
-		}
-	}
-	return ""
+	return &slack.Msg{
+		Type: slack.MarkdownType,
+		Text: fmt.Sprintf("I found the following nodes in %s:\n```\n%s\n```", clusterName, res),
+	}, nil
 }

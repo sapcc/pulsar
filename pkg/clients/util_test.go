@@ -22,6 +22,7 @@ package clients
 import (
 	"testing"
 
+	"github.com/sapcc/pulsar/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,9 +55,9 @@ func TestParseAlertFromSlackMessageText(t *testing.T) {
 	}
 
 	for stimuli, expectedMap := range tests {
-		region, alertname, err := parseRegionAndAlertnameFromPagerdutySummary(stimuli)
+		region, alertname, err := parseRegionAndAlertnameFromText(stimuli)
 		assert.NoError(t, err, "there should be no error parsing the slack message text: %s", stimuli)
-		assert.Equal(t, normalizeString(expectedMap["alertname"]), alertname, "the alertname should be equal")
-		assert.Equal(t, normalizeString(expectedMap["region"]), region, "the region should be equal")
+		assert.Equal(t, util.NormalizeString(expectedMap["alertname"]), alertname, "the alertname should be equal")
+		assert.Equal(t, util.NormalizeString(expectedMap["region"]), region, "the region should be equal")
 	}
 }

@@ -20,6 +20,7 @@
 package bot
 
 import (
+	"github.com/sapcc/pulsar/pkg/auth"
 	"strings"
 
 	"github.com/nlopes/slack"
@@ -52,6 +53,10 @@ func (h *helpCommand) Keywords() []string {
 
 func (h *helpCommand) Describe() string {
 	return "Help for all commands"
+}
+
+func (h *helpCommand) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.Base
 }
 
 func (h *helpCommand) Run(msg *slack.Msg) (*slack.Msg, error) {

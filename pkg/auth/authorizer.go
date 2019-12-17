@@ -32,11 +32,14 @@ import (
 
 // Authorizer ...
 type Authorizer struct {
-	logger            log.Logger
-	cfg               *config.SlackConfig
-	client            *slack.Client
-	tickerInterval    time.Duration
-	authorizedUserIDs []string
+	logger         log.Logger
+	cfg            *config.SlackConfig
+	client         *slack.Client
+	tickerInterval time.Duration
+
+	authorizedUserIDs,
+	kubernetesAdminsUserIDs,
+	kubernetesUsersUserIDs []string
 }
 
 // New returns a new Authorizer or an error.
@@ -60,11 +63,21 @@ func New(cfg *config.SlackConfig, logger log.Logger) (*Authorizer, error) {
 	return a, nil
 }
 
-// IsUserAuthorized checks whether the given userID is authorized.
-func (a *Authorizer) IsUserAuthorized(userID string) bool {
-	return util.Contains(a.authorizedUserIDs, userID)
+// IsUserAuthorized checks whether the given user is authorized to run the bot command.
+func (a *Authorizer) IsUserAuthorized(userID string, requiredUserRole UserRole) bool {
+	switch requiredUserRole {
+	case UserRoles.Base:
+		return util.Contains(a.authorizedUserIDs, userID)
+	case UserRoles.KubernetesUser:
+		return util.Contains(a.kubernetesUsersUserIDs, userID)
+	case UserRoles.KubernetesAdmin:
+		return util.Contains(a.kubernetesAdminsUserIDs, userID)
+	}
+
+	return false
 }
 
+// Run starts the continuous synchronization in the background.
 func (a *Authorizer) Run(stop <-chan struct{}) {
 	ticker := time.NewTicker(a.tickerInterval)
 	defer ticker.Stop()
@@ -84,32 +97,29 @@ func (a *Authorizer) Run(stop <-chan struct{}) {
 }
 
 func (a *Authorizer) getAuthorizedUserIDs() error {
-	ugList, err := a.client.GetUserGroups()
+	ugList, err := a.client.GetUserGroups(slack.GetUserGroupsOptionIncludeUsers(true))
 	if err != nil {
 		return errors.Wrap(err, "failed to list user groups")
 	}
 
-	userGroupIDs := make([]string, 0)
 	for _, ug := range ugList {
-		if util.Contains(a.cfg.AuthorizedUserGroupNames, ug.Name) && !util.Contains(userGroupIDs, ug.ID) {
-			userGroupIDs = append(userGroupIDs, ug.ID)
+		if util.Contains(a.cfg.AuthorizedUserGroupNames, ug.Name) {
+			a.authorizedUserIDs = append(a.authorizedUserIDs, ug.Users...)
+		}
+
+		if util.Contains(a.cfg.KubernetesUserGroupNames, ug.Name) {
+			a.kubernetesUsersUserIDs = append(a.kubernetesUsersUserIDs, ug.Users...)
+		}
+
+		if util.Contains(a.cfg.KubernetesAdminGroupNames, ug.Name) {
+			a.kubernetesAdminsUserIDs = append(a.kubernetesAdminsUserIDs, ug.Users...)
 		}
 	}
 
-	var authorizedUserIDs []string
-	for _, groupID := range userGroupIDs {
-		members, err := a.client.GetUserGroupMembers(groupID)
-		if err != nil {
-			return errors.Wrapf(err, "filed to get members of user group %s", groupID)
-		}
-		authorizedUserIDs = append(authorizedUserIDs, members...)
-	}
-
-	if authorizedUserIDs == nil || len(authorizedUserIDs) == 0 {
+	if a.authorizedUserIDs == nil || len(a.authorizedUserIDs) == 0 {
 		return errors.New("not a single user is authorized to respond to slack messages. check configured authorized user groups")
 	}
 
 	level.Debug(a.logger).Log("msg", "syncing authorized users from slack groups")
-	a.authorizedUserIDs = authorizedUserIDs
 	return nil
 }

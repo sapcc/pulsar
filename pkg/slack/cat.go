@@ -22,6 +22,7 @@ package slack
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"io/ioutil"
 	"net/http"
 
@@ -44,6 +45,10 @@ func (c *catCommand) Init() error {
 
 func (c *catCommand) IsDisabled() bool {
 	return false
+}
+
+func (c *catCommand) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.Base
 }
 
 func (c *catCommand) Describe() string {

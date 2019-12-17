@@ -27,13 +27,15 @@ import (
 )
 
 const (
-	botToken                 = "SLACK_BOT_TOKEN"
-	botID                    = "SLACK_BOT_ID"
-	authorizedUserGroupNames = "SLACK_AUTHORIZED_USER_GROUP_NAMES"
-	accessToken              = "SLACK_ACCESS_TOKEN"
-	verificationToken        = "SLACK_VERIFICATION_TOKEN"
-	apiPort                  = "API_PORT"
-	apiHost                  = "API_HOST"
+	botToken                  = "SLACK_BOT_TOKEN"
+	botID                     = "SLACK_BOT_ID"
+	authorizedUserGroupNames  = "SLACK_AUTHORIZED_USER_GROUP_NAMES"
+	kubernetesUserGroupNames  = "SLACK_KUBERNETES_USER_GROUP_NAMES"
+	kubernetesAdminGroupNames = "SLACK_KUBERNETES_ADMIN_GROUP_NAMES"
+	accessToken               = "SLACK_ACCESS_TOKEN"
+	verificationToken         = "SLACK_VERIFICATION_TOKEN"
+	apiPort                   = "API_PORT"
+	apiHost                   = "API_HOST"
 )
 
 // SlackConfig ...
@@ -52,6 +54,12 @@ type SlackConfig struct {
 
 	// AuthorizedUserGroupNames is the list of user group names whose members are authorized to interact with the bot.
 	AuthorizedUserGroupNames []string
+
+	// KubernetesUserGroupNames is the list of user group names whose members are authorized to perform read operations for kubernetes clusters via the bot.
+	KubernetesUserGroupNames []string
+
+	// KubernetesAdminGroupNames is the list of user group names whose members are authorized to perform all operations for kubernetes clusters via the bot.
+	KubernetesAdminGroupNames []string
 
 	// APIPort is the port on which the API is exposed.
 	APIPort int
@@ -72,13 +80,15 @@ func NewSlackConfigFromEnv() (*SlackConfig, error) {
 	}
 
 	c := &SlackConfig{
-		BotToken:                 os.Getenv(botToken),
-		BotID:                    os.Getenv(botID),
-		AccessToken:              os.Getenv(accessToken),
-		VerificationToken:        os.Getenv(verificationToken),
-		AuthorizedUserGroupNames: strings.Split(os.Getenv(authorizedUserGroupNames), ","),
-		APIHost:                  host,
-		APIPort:                  port,
+		BotToken:                  os.Getenv(botToken),
+		BotID:                     os.Getenv(botID),
+		AccessToken:               os.Getenv(accessToken),
+		VerificationToken:         os.Getenv(verificationToken),
+		AuthorizedUserGroupNames:  strings.Split(os.Getenv(authorizedUserGroupNames), ","),
+		KubernetesUserGroupNames:  strings.Split(os.Getenv(kubernetesUserGroupNames), ","),
+		KubernetesAdminGroupNames: strings.Split(os.Getenv(kubernetesAdminGroupNames), ","),
+		APIHost:                   host,
+		APIPort:                   port,
 	}
 	return c, c.validate()
 }

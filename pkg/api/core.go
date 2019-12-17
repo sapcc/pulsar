@@ -121,7 +121,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !a.authorizer.IsUserAuthorized(message.User.ID) {
+	if !a.authorizer.IsUserAuthorized(message.User.ID, auth.UserRoles.Base) {
 		level.Info(a.logger).Log("msg", "rejecting unauthorized user", "username", message.User.Name, "userid", message.User.ID)
 		w.WriteHeader(http.StatusUnauthorized)
 		return

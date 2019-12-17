@@ -17,27 +17,24 @@
 *
 *******************************************************************************/
 
-package util
+package auth
 
-import (
-	"errors"
-	"regexp"
-)
+// UserRole ...
+type UserRole string
 
-const clusterRegex = `[\w-]*\w{2}-\w{2}-\d|admin|staging`
+// UserRoles enumerates available UserRole.
+var UserRoles = struct {
 
-// ParseClusterFromString is self-explanatory.
-func ParseClusterFromString(theString string) ([]string, error) {
-	r, err := regexp.Compile(clusterRegex)
-	if err != nil {
-		return nil, err
-	}
+	// Base role required for any interaction with the bot.
+	Base,
 
-	clusters := r.FindAllString(theString, -1)
+	// KubernetesAdmin is required for admin operations in Kubernetes clusters via the bot.
+	KubernetesAdmin,
 
-	if len(clusters) == 0 {
-		return nil, errors.New("no cluster found in input")
-	}
-
-	return NormalizeStringSlice(clusters), nil
+	// KubernetesUser is required for reading operations in Kubernetes clusters via the bot.
+	KubernetesUser UserRole
+}{
+	"Base",
+	"KubernetesAdmin",
+	"KubernetesUser",
 }

@@ -21,6 +21,7 @@ package slack
 
 import (
 	"fmt"
+	"github.com/sapcc/pulsar/pkg/auth"
 
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/bot"
@@ -59,6 +60,10 @@ func (o *openIncidentCommand) Describe() string {
 
 func (o *openIncidentCommand) Keywords() []string {
 	return []string{"open incident", "create incident", "new incident"}
+}
+
+func (o *openIncidentCommand) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.Base
 }
 
 func (o *openIncidentCommand) Run(msg *slack.Msg) (*slack.Msg, error) {

@@ -21,6 +21,7 @@ package slack
 
 import (
 	"fmt"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"math/rand"
 
 	"github.com/nlopes/slack"
@@ -44,6 +45,12 @@ func (h *helloCommand) Init() error {
 // IsDisabled can be used to (temporarily) disable the command.
 func (h *helloCommand) IsDisabled() bool {
 	return false
+}
+
+// RequiredUserRole returns the UserRole required to run the command.
+// Should at least return auth.UserRoles.Base .
+func (c *helloCommand) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.Base
 }
 
 // Describe returns a brief help text for the command.

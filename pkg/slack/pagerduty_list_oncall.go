@@ -21,6 +21,7 @@ package slack
 
 import (
 	"fmt"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"strings"
 
 	"github.com/nlopes/slack"
@@ -67,6 +68,10 @@ func (l *pagerdutyListOnCall) Describe() string {
 
 func (l *pagerdutyListOnCall) Keywords() []string {
 	return []string{"list oncall", "list on-call", "list on call", "who's on call", "who's on-call"}
+}
+
+func (l *pagerdutyListOnCall) RequiredUserRole() auth.UserRole {
+	return auth.UserRoles.Base
 }
 
 func (l *pagerdutyListOnCall) Run(msg *slack.Msg) (*slack.Msg, error) {

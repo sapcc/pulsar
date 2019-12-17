@@ -21,6 +21,7 @@ package bot
 
 import (
 	"github.com/nlopes/slack"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/util"
 )
 
@@ -40,6 +41,10 @@ type Command interface {
 
 	// IsDisabled can be used to (temporarily) disable a command.
 	IsDisabled() bool
+
+	// RequiredUserRole returns the UserRole required to run the command.
+	// Should at least return auth.UserRoles.Base .
+	RequiredUserRole() auth.UserRole
 
 	// Run executes the command and returns the response or an error.
 	Run(originalMsg *slack.Msg) (*slack.Msg, error)

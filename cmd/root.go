@@ -30,9 +30,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	rootCmdLongUsage = "Pulsar bot mode"
-)
+const rootCmdLongUsage = "Pulsar bot mode"
 
 func New() *cobra.Command {
 	stop := make(chan struct{})

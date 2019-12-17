@@ -89,6 +89,7 @@ func (b *Bot) ListenAndRespond(stop <-chan struct{}) {
 			case *slack.MessageEvent:
 				if err := b.handleMessageEvent(e); err != nil {
 					level.Error(b.logger).Log("msg", "error handling slack event", "err", err.Error())
+					b.respond(&slack.Msg{Text: "Failed to respond"}, &e.Msg)
 				}
 
 			case *slack.RTMError:
@@ -124,8 +125,10 @@ func (b *Bot) handleMessageEvent(e *slack.MessageEvent) error {
 	atLeastOneCommand := false
 	for _, c := range b.commands {
 		if util.HasAnyPrefix(c.Keywords(), text) {
-			if !b.authorizer.IsUserAuthorized(e.Msg.User) {
-				level.Debug(b.logger).Log("msg", "user is not authorized", "userID", e.Msg.User)
+
+			if !b.authorizer.IsUserAuthorized(e.Msg.User, c.RequiredUserRole()) {
+				level.Debug(b.logger).Log("msg", "user is not authorized", "userID", e.Msg.User, "requiredRole", c.RequiredUserRole())
+				b.respond(&slack.Msg{Text: "You are not authorized :x:"}, &e.Msg)
 				return nil
 			}
 
