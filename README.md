@@ -1,7 +1,14 @@
 pulsar
 -------------
 
-Slack bot for [Supernova](https://github.com/sapcc/supernova).
+Interactive Slack bot for [Supernova](https://github.com/sapcc/supernova).
+
+## Features
+
+* List Prometheus alerts and Pagerduty incidents
+* Acknowledge Pagerduty incidents
+* List current Pagerduty on-call staff
+* List Kubernetes nodes in a cluster 
 
 ## Usage
 
@@ -21,5 +28,5 @@ export PAGERDUTY_AUTH_TOKEN = "superSecret!"
 
 ## Development
 
-Commands are independent modules loaded during start and can be found in the [slack package](./pkg/slack).
-See the [example](./pkg/slack/hello.go).
+Commands are independent plugins loaded during start and can be found in the [slack package](./pkg/slack).
+See the [example command](./pkg/slack/hello.go).

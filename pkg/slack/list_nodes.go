@@ -52,7 +52,7 @@ func (l *listNodesCommand) IsDisabled() bool {
 }
 
 func (l *listNodesCommand) Describe() string {
-	return "List nodes in a cluster."
+	return "List nodes in cluster $clusterName."
 }
 
 func (l *listNodesCommand) Keywords() []string {
