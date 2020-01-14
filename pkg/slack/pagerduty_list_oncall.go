@@ -21,10 +21,10 @@ package slack
 
 import (
 	"fmt"
-	"github.com/sapcc/pulsar/pkg/auth"
 	"strings"
 
 	"github.com/nlopes/slack"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/bot"
 	"github.com/sapcc/pulsar/pkg/clients"
 )
@@ -39,7 +39,7 @@ func init() {
 
 type pagerdutyListOnCall struct {
 	pagerdutyClient *clients.PagerdutyClient
-	slackClient *clients.SlackClient
+	slackClient     *clients.SlackClient
 }
 
 func (l *pagerdutyListOnCall) Init() error {

@@ -76,6 +76,11 @@ func NewPagerdutyClientFromEnv() (*PagerdutyClient, error) {
 	return NewPagerdutyClient(cfg, util.NewLogger())
 }
 
+// GetDefaultUser returns the pagerduty default user.
+func (c *PagerdutyClient) GetDefaultUser() *pagerduty.User {
+	return c.defaultUser
+}
+
 // GetUserByEmail returns the pagerduty user for the given email or an error.
 func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) {
 	userList, err := c.pagerdutyClient.ListUsers(pagerduty.ListUsersOptions{Query: email})
@@ -135,6 +140,11 @@ func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty
 	incident, err := c.pagerdutyClient.GetIncident(incidentID)
 	if err != nil {
 		return err
+	}
+
+	// fall back to default user.
+	if user == nil {
+		user = c.defaultUser
 	}
 
 	now := time.Now().UTC()

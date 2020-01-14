@@ -21,10 +21,10 @@ package models
 
 import (
 	"fmt"
-	"github.com/sapcc/pulsar/pkg/util"
 	"time"
 
 	"github.com/nlopes/slack"
+	"github.com/sapcc/pulsar/pkg/util"
 )
 
 const (

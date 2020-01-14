@@ -17,30 +17,23 @@
 *
 *******************************************************************************/
 
-package models
+package util
 
-import "github.com/nlopes/slack"
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
-func appendTextSectionBlock(blocks []slack.Block, textSegments ...string) []slack.Block {
-	txtBlocks := make([]*slack.TextBlockObject, 0)
-
-	for _, txt := range textSegments {
-		txtBlocks = append(txtBlocks, slack.NewTextBlockObject(
-			slack.MarkdownType,
-			txt,
-			false,
-			false,
-		))
+func TestParseClusterFromString(t *testing.T) {
+	stimuli := map[string][]string{
+		"[CRITICAL - 2] [LA-BR-1] ManyPodsNotReadyOnNode - Less then 75% of pods ready on node": {"la-br-1"},
+		"[RESOLVED] [LA-BR-1] OpenstackNovaDatapathDown - Datapath nova metadata is down": {"la-br-1"},
+		"[CRITICAL] [S-LA-BR-1] InfrastructurePrometheusFederationFailed - Infrastructure Prometheus s-la-br-1 is down": {"s-la-br-1"},
 	}
 
-	return append(blocks, slack.NewSectionBlock(nil, txtBlocks, nil))
-}
-
-func appendActionSectionBlock(blocks []slack.Block, actions ...*incidentAction) []slack.Block {
-	actionBlock := slack.NewActionBlock("")
-	for _, act := range actions {
-		btnTxt := slack.NewTextBlockObject(slack.PlainTextType, act.text, true, false)
-		actionBlock.Elements.ElementSet = append(actionBlock.Elements.ElementSet, slack.NewButtonBlockElement(act.id, act.value, btnTxt))
+	for inputString, expected := range stimuli {
+		got, err := ParseClusterFromString(inputString)
+		assert.NoError(t, err, "there should be no error parsing cluster names from the string")
+		assert.EqualValues(t, expected, got, "result and expected should have equal values")
 	}
-	return append(blocks, actionBlock)
 }

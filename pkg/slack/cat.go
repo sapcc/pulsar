@@ -22,12 +22,12 @@ package slack
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/sapcc/pulsar/pkg/auth"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/bot"
 )
 

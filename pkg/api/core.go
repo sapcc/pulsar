@@ -49,7 +49,7 @@ const (
 type API struct {
 	authorizer  *auth.Authorizer
 	slackClient *clients.SlackClient
-	pdClient *clients.PagerdutyClient
+	pdClient    *clients.PagerdutyClient
 	cfg         *config.SlackConfig
 	logger      log.Logger
 }
@@ -128,7 +128,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := a.handleInteractionCallback(message); err != nil {
-		level.Error(a.logger).Log("msg", "error handeling message", "err", err.Error())
+		level.Error(a.logger).Log("msg", "error handling message", "err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -146,50 +146,9 @@ func (a *API) handleInteractionCallback(message slack.InteractionCallback) error
 
 		switch act.Name {
 		case actionTypeAcknowledge:
-			// Post the message.
-			if _, _, err := a.slackClient.PostMessage(
-				message.Channel.ID,
-				slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), true),
-				slack.MsgOptionTS(message.OriginalMessage.Timestamp),
-			); err != nil {
-				return err
-			}
+			return a.acknowledge(message)
 
-			// Add reaction emoji.
-			if err := a.slackClient.AddReactionToMessage(
-				message.Channel.ID,
-				message.OriginalMessage.Timestamp,
-				emojiFirefighter,
-			); err != nil {
-				return err
-			}
-
-			user, err := a.pdClient.GetUserByEmail(message.User.Profile.Email)
-			if err != nil {
-				return err
-			}
-
-			f := &clients.Filter{}
-			f.ClusterFilterFromText(message.OriginalMessage.Text)
-			f.AlertnameFilterFromText(message.OriginalMessage.Text)
-
-			incident, err := a.pdClient.GetIncident(f)
-			if err != nil {
-				return err
-			}
-
-			return a.pdClient.AcknowledgeIncident(incident.ID, user)
 		}
-	}
-
-	for _, act := range actionCallbacks.BlockActions {
-		// Consider only button clicks.
-		if act.Type != actionType {
-			continue
-		}
-
-		//TODO:
-		fmt.Println(act.Text)
 	}
 
 	return nil

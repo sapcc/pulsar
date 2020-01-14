@@ -26,7 +26,7 @@ import (
 
 const clusterRegex = `[\w-]*\w{2}-\w{2}-\d|admin|staging`
 
-// ParseClusterFromString is self-explanatory.
+// ParseClusterFromString returns the cluster names found in the given string or an error.
 func ParseClusterFromString(theString string) ([]string, error) {
 	r, err := regexp.Compile(clusterRegex)
 	if err != nil {
@@ -34,10 +34,12 @@ func ParseClusterFromString(theString string) ([]string, error) {
 	}
 
 	clusters := r.FindAllString(theString, -1)
+	clusters = NormalizeStringSlice(clusters)
+	clusters = RemoveDuplicates(clusters)
 
 	if len(clusters) == 0 {
 		return nil, errors.New("no cluster found in input")
 	}
 
-	return NormalizeStringSlice(clusters), nil
+	return clusters, nil
 }

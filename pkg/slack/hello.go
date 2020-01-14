@@ -21,10 +21,10 @@ package slack
 
 import (
 	"fmt"
-	"github.com/sapcc/pulsar/pkg/auth"
 	"math/rand"
 
 	"github.com/nlopes/slack"
+	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/bot"
 )
 

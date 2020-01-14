@@ -19,7 +19,9 @@
 
 package util
 
-import "strings"
+import (
+	"strings"
+)
 
 // Contains checks whether the given string slice contains the searchString.
 func Contains(sslice []string, searchString string) bool {
@@ -75,4 +77,17 @@ func IsSlicesEqual(sslice1, sslice2 []string) bool {
 	}
 
 	return true
+}
+
+// RemoveDuplicates does what it says on the given string slice.
+func RemoveDuplicates(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	res := make([]string, 0)
+	for _, itm := range stringSlice {
+		if _, exists := keys[itm]; !exists {
+			keys[itm] = true
+			res = append(res, itm)
+		}
+	}
+	return res
 }

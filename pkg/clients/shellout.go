@@ -21,9 +21,10 @@ package clients
 
 import (
 	"bytes"
-	"errors"
 	"os/exec"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var errNotFound = errors.New("command not found")
@@ -55,14 +56,16 @@ func (c *Command) verify() error {
 // Run starts the command, waits until execution finished and returns stdOut or the error.
 func (c *Command) Run(args ...string) (string, error) {
 	cmd := exec.Command(c.cmd, append(c.defaultArgs, args...)...)
-	var stdOut bytes.Buffer
+
+	var stdErr, stdOut bytes.Buffer
+	cmd.Stderr = &stdErr
 	cmd.Stdout = &stdOut
 	if err := cmd.Start(); err != nil {
-		return "", err
+		return "", errors.Wrap(err, stdErr.String())
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return "", err
+		return "", errors.Wrap(err, stdErr.String())
 	}
 
 	return stdOut.String(), nil
