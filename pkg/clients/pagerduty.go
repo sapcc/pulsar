@@ -106,6 +106,10 @@ func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error)
 		},
 	}
 
+	if f != nil {
+		level.Debug(c.logger).Log("msg", "listing pagerduty incident", "filter", f.ToString())
+	}
+
 	incidentList, err := c.pagerdutyClient.ListIncidents(o)
 	if err != nil {
 		return nil, err
@@ -125,11 +129,11 @@ func (c *PagerdutyClient) GetIncident(f *Filter) (*pagerduty.Incident, error) {
 	f.SetLimit(1)
 	incidentList, err := c.ListIncidents(f)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error listing pagerduty incidents")
 	}
 
 	if len(incidentList) == 0 {
-		return nil, errors.New("no incident found")
+		return nil, errors.New("not a single pagerduty incident found")
 	}
 
 	return &incidentList[0], nil

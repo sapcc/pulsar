@@ -20,12 +20,16 @@
 package clients
 
 import (
+	"strings"
+
 	"github.com/go-kit/kit/log"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
 	"github.com/sapcc/pulsar/pkg/config"
 	"github.com/sapcc/pulsar/pkg/util"
 )
+
+const errAlreadyReacted = "already_reacted"
 
 // SlackClient ...
 type SlackClient struct {
@@ -78,8 +82,24 @@ func (s *SlackClient) GetUserByEmail(email string) (*slack.User, error) {
 	return s.client.GetUserByEmail(email)
 }
 
+func (s *SlackClient) GetUserByID(userID string) (*slack.User, error) {
+	return s.client.GetUserInfo(userID)
+}
+
 // AddReactionToMessage adds a reaction emoji to an existing message.
 func (s *SlackClient) AddReactionToMessage(channel, timestamp, reaction string) error {
 	msgRef := slack.NewRefToMessage(channel, timestamp)
-	return s.client.AddReaction(reaction, msgRef)
+	err := s.client.AddReaction(reaction, msgRef)
+	// Ignore if reaction emoji already present.
+	if err != nil && !isErrAlreadyReacted(err) {
+		return err
+	}
+	return nil
+}
+
+func isErrAlreadyReacted(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.ToLower(err.Error()) == errAlreadyReacted
 }

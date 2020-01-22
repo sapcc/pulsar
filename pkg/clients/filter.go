@@ -1,8 +1,10 @@
 package clients
 
 import (
+	"fmt"
 	"github.com/sapcc/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
+	"strings"
 )
 
 // Filter can be used to filter Pagerduty incidents.
@@ -82,4 +84,26 @@ func (f *Filter) GetLimit() uint {
 		return *f.limit
 	}
 	return 100
+}
+
+// ToString returns the string representation of the filter.
+func (f *Filter) ToString() string {
+	var res string
+	if f.Alertname != "" {
+		res += fmt.Sprintf("alertname=%s", f.Alertname)
+	}
+
+	if f.Severity != "" {
+		res += fmt.Sprintf(", severity=%s", f.Severity)
+	}
+
+	if f.Fingerprint != "" {
+		res += fmt.Sprintf(", fingerprint=%s", f.Fingerprint)
+	}
+
+	if f.Clusters != nil {
+		res += fmt.Sprintf(", clusters=%s", strings.Join(f.Clusters, ","))
+	}
+
+	return res
 }

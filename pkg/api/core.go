@@ -26,6 +26,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -40,9 +41,9 @@ const (
 	actionType = "button"
 	actionName = "reaction"
 
-	actionTypeAcknowledge = "acknowledge"
-	acknowledgeString     = "Acknowledged by <@%s>"
-	emojiFirefighter      = "male-firefighter"
+	actionValueAcknowledge = "acknowledge"
+	acknowledgeString      = "Acknowledged by <@%s>"
+	emojiFirefighter       = "male-firefighter"
 )
 
 // API ...
@@ -56,10 +57,22 @@ type API struct {
 
 // New returns a new API or an error.
 func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger) (*API, error) {
+	slackClient, err := clients.NewSlackClientFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	pdClient, err := clients.NewPagerdutyClientFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
 	return &API{
-		logger:     log.With(logger, "component", "api"),
-		authorizer: authorizer,
-		cfg:        cfg,
+		logger:      log.With(logger, "component", "api"),
+		authorizer:  authorizer,
+		cfg:         cfg,
+		slackClient: slackClient,
+		pdClient:    pdClient,
 	}, nil
 }
 
@@ -108,6 +121,8 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	jsonBody = strings.TrimPrefix(jsonBody, "payload=")
+
 	var message slack.InteractionCallback
 	if err := json.Unmarshal([]byte(jsonBody), &message); err != nil {
 		level.Error(a.logger).Log("msg", "error unmarshalling json body", "err", err.Error())
@@ -144,10 +159,9 @@ func (a *API) handleInteractionCallback(message slack.InteractionCallback) error
 			continue
 		}
 
-		switch act.Name {
-		case actionTypeAcknowledge:
+		switch act.Value {
+		case actionValueAcknowledge:
 			return a.acknowledge(message)
-
 		}
 	}
 

@@ -65,7 +65,7 @@ func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger
 			level.Error(b.logger).Log("msg", "failed to initialize command", "keywords", strings.Join(cmd.Keywords(), ", "), "description", cmd.Describe(), "err", err.Error())
 			continue
 		}
-		level.Debug(b.logger).Log("msg", "registering command", "keywords", strings.Join(cmd.Keywords(), ", "), "description", cmd.Describe())
+		level.Info(b.logger).Log("msg", "registering command", "keywords", strings.Join(cmd.Keywords(), ", "), "description", cmd.Describe())
 		b.commands = append(b.commands, cmd)
 	}
 

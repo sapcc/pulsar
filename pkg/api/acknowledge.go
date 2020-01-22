@@ -21,8 +21,8 @@ package api
 
 import (
 	"fmt"
-	"github.com/go-kit/kit/log/level"
 
+	"github.com/go-kit/kit/log/level"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/clients"
 )
@@ -35,7 +35,7 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 	// Post the message.
 	if _, _, err := a.slackClient.PostMessage(
 		message.Channel.ID,
-		slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), true),
+		slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), false),
 		slack.MsgOptionTS(message.OriginalMessage.Timestamp),
 	); err != nil {
 		return err
@@ -50,8 +50,14 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		return err
 	}
 
+	slackUser, err := a.slackClient.GetUserByID(message.User.ID)
+	if err != nil {
+		level.Error(a.logger).Log("msg", "cannot find slack user", "err", err.Error())
+		return err
+	}
+
 	// Find the corresponding pagerduty user.
-	user, err := a.pdClient.GetUserByEmail(message.User.Profile.Email)
+	user, err := a.pdClient.GetUserByEmail(slackUser.Profile.Email)
 	if err != nil {
 		level.Info(a.logger).Log("msg", "failed to find pagerduty user. falling back to default user", "err", err.Error())
 		user = a.pdClient.GetDefaultUser()

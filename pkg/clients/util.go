@@ -21,10 +21,11 @@ package clients
 
 import (
 	"fmt"
-	"github.com/sapcc/go-pagerduty"
-	"github.com/sapcc/pulsar/pkg/util"
 	"regexp"
 	"strings"
+
+	"github.com/sapcc/go-pagerduty"
+	"github.com/sapcc/pulsar/pkg/util"
 )
 
 // regionAlertnameRegex is used to find the region and alertname from an incident text

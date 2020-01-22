@@ -53,11 +53,13 @@ func New() *cobra.Command {
 				return errors.Wrap(err, "error initializing authorizer")
 			}
 
+			// Start the bot.
 			b, err := bot.New(authorizer, cfg, logger)
 			if err != nil {
 				return errors.Wrap(err, "error initializing bot")
 			}
 
+			// Start the API handling interactive messages.
 			a, err := api.New(authorizer, cfg, logger)
 			if err != nil {
 				return errors.Wrap(err, "error initializing api")
