@@ -4,7 +4,7 @@ isDebug: false
 
 image:
   repository: sapcc/pulsar
-  tag: v202001221653
+  tag: v202001221730
   pullPolicy: IfNotPresent
 
 service:
