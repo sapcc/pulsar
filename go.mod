@@ -3,12 +3,15 @@ module github.com/sapcc/pulsar
 go 1.13
 
 require (
+	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-kit/kit v0.9.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/gosuri/uitable v0.0.4
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/nlopes/slack v0.6.0
 	github.com/pkg/errors v0.8.0
 	github.com/sapcc/go-pagerduty v0.0.0-20190215101515-304f7ea6b5b6

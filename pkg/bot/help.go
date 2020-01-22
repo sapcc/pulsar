@@ -20,11 +20,12 @@
 package bot
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/gosuri/uitable"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/auth"
-	"github.com/sapcc/pulsar/pkg/util"
 )
 
 // Help is the only command available from the beginning.
@@ -60,12 +61,18 @@ func (h *helpCommand) RequiredUserRole() auth.UserRole {
 }
 
 func (h *helpCommand) Run(msg *slack.Msg) (*slack.Msg, error) {
-	commands := [][]string{
-		{"*Command*", "*Description*"},
-	}
+	table := uitable.New()
+	table.MaxColWidth = 200
+
+	table.AddRow("The following command are available:")
+	table.AddRow("Command", "Description")
+
 	for _, c := range h.availableCommands {
-		commands = append(commands, []string{strings.Join(c.Keywords(), ", "), c.Describe()})
+		table.AddRow(strings.Join(c.Keywords(), ", "), c.Describe())
 	}
 
-	return util.ToSlackTable(commands), nil
+	return &slack.Msg{
+		Type: slack.MarkdownType,
+		Text: fmt.Sprintf("```\n%s\n```", table.String()),
+	}, nil
 }

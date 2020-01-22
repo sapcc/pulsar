@@ -132,6 +132,7 @@ func (b *Bot) handleMessageEvent(e *slack.MessageEvent) error {
 				return nil
 			}
 
+			level.Debug(b.logger).Log("msg", "running command", "description", c.Describe())
 			atLeastOneCommand = true
 			response, err := c.Run(&e.Msg)
 			if err != nil {
@@ -144,6 +145,7 @@ func (b *Bot) handleMessageEvent(e *slack.MessageEvent) error {
 		}
 	}
 
+	// Show the help if no command could be found.
 	if atLeastOneCommand {
 		return nil
 	}
