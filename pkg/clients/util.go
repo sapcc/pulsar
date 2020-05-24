@@ -24,7 +24,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sapcc/go-pagerduty"
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
 )
 
@@ -61,7 +61,7 @@ func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
 	return util.NormalizeString(region), util.NormalizeString(alertname), nil
 }
 
-func containsUser(userList []*pagerduty.User, user pagerduty.APIObject) bool {
+func containsUser(userList []*pagerduty.User, user pagerduty.User) bool {
 	for _, u := range userList {
 		if u.ID == user.ID {
 			return true

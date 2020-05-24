@@ -22,6 +22,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/PagerDuty/go-pagerduty"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -142,7 +143,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.handleInteractionCallback(message); err != nil {
+	if _,err := a.handleInteractionCallback(message); err != nil {
 		level.Error(a.logger).Log("msg", "error handling message", "err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -151,7 +152,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (a *API) handleInteractionCallback(message slack.InteractionCallback) error {
+func (a *API) handleInteractionCallback(message slack.InteractionCallback) (*pagerduty.ListIncidentsResponse, error) {
 	actionCallbacks := message.ActionCallback
 	for _, act := range actionCallbacks.AttachmentActions {
 		// Consider only button clicks.
@@ -165,5 +166,5 @@ func (a *API) handleInteractionCallback(message slack.InteractionCallback) error
 		}
 	}
 
-	return nil
+	return nil, nil
 }

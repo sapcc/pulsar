@@ -2,7 +2,7 @@ package clients
 
 import (
 	"fmt"
-	"github.com/sapcc/go-pagerduty"
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
 	"strings"
 )

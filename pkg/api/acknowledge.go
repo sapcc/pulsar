@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"github.com/go-kit/kit/log/level"
 	"github.com/nlopes/slack"
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/clients"
 )
 
@@ -31,14 +32,14 @@ import (
 // 1. open a slack thread noting the acknowledger (slack user) and time
 // 2. add an emoji to the original slack message with the alert to indicate it's being worked on
 // 3. search and acknowledge the corresponding incident in pagerduty to avoid further esacalation (call, etc.)
-func (a *API) acknowledge(message slack.InteractionCallback) error {
+func (a *API) acknowledge(message slack.InteractionCallback) (*pagerduty.ListIncidentsResponse, error) {
 	// Post the message.
 	if _, _, err := a.slackClient.PostMessage(
 		message.Channel.ID,
 		slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), false),
 		slack.MsgOptionTS(message.OriginalMessage.Timestamp),
 	); err != nil {
-		return err
+		return nil, err
 	}
 
 	// Add reaction emoji to original message.
@@ -47,13 +48,13 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		message.OriginalMessage.Timestamp,
 		emojiFirefighter,
 	); err != nil {
-		return err
+		return nil, err
 	}
 
 	slackUser, err := a.slackClient.GetUserByID(message.User.ID)
 	if err != nil {
 		level.Error(a.logger).Log("msg", "cannot find slack user", "err", err.Error())
-		return err
+		return nil, err
 	}
 
 	// Find the corresponding pagerduty user.
@@ -64,19 +65,19 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 	}
 
 	if len(message.OriginalMessage.Attachments) == 0 ||  message.OriginalMessage.Attachments[0].Text == "" {
-		return errors.New("slack message structure doesn't fit")
+		return nil, errors.New("slack message structure doesn't fit")
 	}
 
 	f := &clients.Filter{}
 	if f.ClusterFilterFromText(message.OriginalMessage.Attachments[0].Text) != nil ||
 	   f.AlertnameFilterFromText(message.OriginalMessage.Attachments[0].Text) !=nil {
-		return errors.New("slack message parsing for alertname and cluster failed")
+		return nil, errors.New("slack message parsing for alertname and cluster failed")
 	}
 
 	incident, err := a.pdClient.GetIncident(f)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return a.pdClient.AcknowledgeIncident(incident.ID, user)
+	return a.pdClient.AcknowledgeIncident(incident.Id, user)
 }
