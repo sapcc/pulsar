@@ -29,7 +29,7 @@ import (
 )
 
 // regionAlertnameRegex is used to find the region and alertname from an incident text
-const regionAlertnameRegex = `.*\s\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\]\s(?P<alertname>.+?)\s\-.*`
+const regionAlertnameRegex = `.*[\s\*]+\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\][\s\*]+(?P<alertname>.+?)\s\-.*`
 
 // parseRegionAndAlertnameFromText does what it says.
 // It's meant as a workaround until Fingerprints for Prometheus alerts are supported.

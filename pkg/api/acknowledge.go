@@ -20,8 +20,8 @@
 package api
 
 import (
+	"errors"
 	"fmt"
-
 	"github.com/go-kit/kit/log/level"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/clients"
@@ -63,9 +63,15 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		user = a.pdClient.GetDefaultUser()
 	}
 
+	if len(message.OriginalMessage.Attachments) == 0 ||  message.OriginalMessage.Attachments[0].Text == "" {
+		return errors.New("slack message structure doesn't fit")
+	}
+
 	f := &clients.Filter{}
-	f.ClusterFilterFromText(message.OriginalMessage.Text)
-	f.AlertnameFilterFromText(message.OriginalMessage.Text)
+	if f.ClusterFilterFromText(message.OriginalMessage.Attachments[0].Text) != nil ||
+	   f.AlertnameFilterFromText(message.OriginalMessage.Attachments[0].Text) !=nil {
+		return errors.New("slack message parsing for alertname and cluster failed")
+	}
 
 	incident, err := a.pdClient.GetIncident(f)
 	if err != nil {
