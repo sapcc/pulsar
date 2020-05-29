@@ -32,9 +32,9 @@ import (
 )
 
 const (
-	statusAcknowledged = "acknowledged"
-	statusTriggered    = "triggered"
-	typeUserReference  = "user_reference"
+	IncidentStatusAcknowledged = "acknowledged"
+	IncidentStatusTriggered    = "triggered"
+	typeUserReference          = "user_reference"
 )
 
 // PagerdutyClient wraps the pagerduty client.
@@ -100,7 +100,7 @@ func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) 
 // ListIncidents returns a list of incidents matching the given filter or an error.
 func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error) {
 	o := pagerduty.ListIncidentsOptions{
-		Statuses: []string{statusTriggered},
+		Statuses: []string{IncidentStatusTriggered, IncidentStatusAcknowledged},
 		APIListObject: pagerduty.APIListObject{
 			Limit: f.GetLimit(),
 		},
@@ -146,9 +146,9 @@ func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty
 		user = c.defaultUser
 	}
 	incident := pagerduty.ManageIncidentsOptions{
-		ID : incidentID,
-		Type   :  "incident",
-		Status   : statusAcknowledged,
+		ID :       incidentID,
+		Type   :   "incident",
+		Status   : IncidentStatusAcknowledged,
 	}
 
 	level.Debug(c.logger).Log("msg", "acknowledging incident", "incidentID", incident.ID, "userEmail", user.Email)
@@ -159,15 +159,17 @@ func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty
 func (c *PagerdutyClient) AddActualAcknowledgerAsNoteToIncident(incidentID, actualAcknowledger string) (*pagerduty.IncidentNote, error) {
 	now := time.Now().UTC()
 	note := pagerduty.IncidentNote{
-		CreatedAt: now.String(),
+		ID: incidentID,
+		//User      APIObject `json:"user,omitempty"`
 		User: pagerduty.APIObject{
 			ID:      c.defaultUser.ID,
 			Type:    typeUserReference,
-			Summary: c.defaultUser.Summary,
+			Summary: c.defaultUser.Email,//as we use api key which is not bound to a user, we need to give the email and not c.defaultUser.Summary,
 			Self:    c.defaultUser.Self,
 			HTMLURL: c.defaultUser.HTMLURL,
 		},
 		Content: fmt.Sprintf("Incident was acknowledged on behalf of %s. time: %s", actualAcknowledger, now.String()),
+		CreatedAt: now.String(),
 	}
 
 	return c.pagerdutyClient.CreateIncidentNoteWithResponse(incidentID, note)
