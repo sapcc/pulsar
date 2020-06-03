@@ -68,26 +68,28 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 	}
 
 	f := &clients.Filter{}
-	if f.ClusterFilterFromText(message.OriginalMessage.Attachments[0].Text) != nil ||
-	   f.AlertnameFilterFromText(message.OriginalMessage.Attachments[0].Text) !=nil {
-		return errors.New("slack message parsing for alertname and cluster failed")
-	}
+	for  i := 0; i < len(message.OriginalMessage.Attachments); i++ {
+		if f.ClusterFilterFromText(message.OriginalMessage.Attachments[i].Text) != nil ||
+			f.AlertnameFilterFromText(message.OriginalMessage.Attachments[i].Text) != nil {
+			return errors.New("slack message parsing for alertname and cluster failed")
+		}
 
-	incident, err := a.pdClient.GetIncident(f)
-	if err != nil {
-		return err
-	}
-
-	if incident.Status == clients.IncidentStatusTriggered {
-		_, err = a.pdClient.AcknowledgeIncident(incident.Id, user)
+		incident, err := a.pdClient.GetIncident(f)
 		if err != nil {
 			return err
 		}
-	}
 
-	if user.ID == a.pdClient.GetDefaultUser().ID {
-		_, err = a.pdClient.AddActualAcknowledgerAsNoteToIncident(incident.Id, slackUser.Name)
-		return  err
+		if incident.Status == clients.IncidentStatusTriggered {
+			_, err = a.pdClient.AcknowledgeIncident(incident.Id, user)
+			if err != nil {
+				return err
+			}
+		}
+
+		if user.ID == a.pdClient.GetDefaultUser().ID {
+			_, err = a.pdClient.AddActualAcknowledgerAsNoteToIncident(incident.Id, slackUser.Name)
+			return err
+		}
 	}
 	return nil
 }

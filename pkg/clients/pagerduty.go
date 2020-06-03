@@ -101,9 +101,6 @@ func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) 
 func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error) {
 	o := pagerduty.ListIncidentsOptions{
 		Statuses: []string{IncidentStatusTriggered, IncidentStatusAcknowledged},
-		APIListObject: pagerduty.APIListObject{
-			Limit: f.GetLimit(),
-		},
 	}
 
 	if f != nil {
@@ -160,7 +157,6 @@ func (c *PagerdutyClient) AddActualAcknowledgerAsNoteToIncident(incidentID, actu
 	now := time.Now().UTC()
 	note := pagerduty.IncidentNote{
 		ID: incidentID,
-		//User      APIObject `json:"user,omitempty"`
 		User: pagerduty.APIObject{
 			ID:      c.defaultUser.ID,
 			Type:    typeUserReference,

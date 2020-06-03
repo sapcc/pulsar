@@ -67,6 +67,9 @@ func (f *Filter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Inc
 
 		if keep {
 			res = append(res, inc)
+			if len(res) == int(f.GetLimit()) {
+				break
+			}
 		}
 	}
 
