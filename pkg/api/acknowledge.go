@@ -68,9 +68,9 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 	}
 
 	f := &clients.Filter{}
-	for  i := 0; i < len(message.OriginalMessage.Attachments); i++ {
-		if f.ClusterFilterFromText(message.OriginalMessage.Attachments[i].Text) != nil ||
-			f.AlertnameFilterFromText(message.OriginalMessage.Attachments[i].Text) != nil {
+	for _, msgAttachment := range message.OriginalMessage.Attachments {
+		if f.ClusterFilterFromText(msgAttachment.Text) != nil ||
+			f.AlertnameFilterFromText(msgAttachment.Text) != nil {
 			return errors.New("slack message parsing for alertname and cluster failed")
 		}
 
