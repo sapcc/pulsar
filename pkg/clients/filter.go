@@ -2,12 +2,14 @@ package clients
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
-	"strings"
 )
 
-// Filter can be used to filter Pagerduty incidents.
+// Filter can be used to filter PagerDuty incidents.
+// Filters provided by the PagerDuty API should be explored first before extending the below logic.
 type Filter struct {
 	// Alertname is the alertname to filter for.
 	Alertname,
@@ -21,7 +23,7 @@ type Filter struct {
 	// Clusters to filter for
 	Clusters []string
 
-	// limit is the number of items per response. Use
+	// limit is the number of items per response.
 	limit *uint
 }
 
@@ -67,9 +69,6 @@ func (f *Filter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Inc
 
 		if keep {
 			res = append(res, inc)
-			if len(res) == int(f.GetLimit()) {
-				break
-			}
 		}
 	}
 

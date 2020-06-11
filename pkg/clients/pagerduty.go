@@ -23,10 +23,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/config"
 	"github.com/sapcc/pulsar/pkg/util"
 )
@@ -35,6 +35,7 @@ const (
 	IncidentStatusAcknowledged = "acknowledged"
 	IncidentStatusTriggered    = "triggered"
 	typeUserReference          = "user_reference"
+	typeIncident               = "incident"
 )
 
 // PagerdutyClient wraps the pagerduty client.
@@ -138,14 +139,14 @@ func (c *PagerdutyClient) GetIncident(f *Filter) (*pagerduty.Incident, error) {
 
 // AcknowledgeIncident sets a incident to status acknowledged and assigns the given user to it.
 func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty.User) (*pagerduty.ListIncidentsResponse, error) {
-
 	if user == nil {
 		user = c.defaultUser
 	}
+
 	incident := pagerduty.ManageIncidentsOptions{
-		ID :       incidentID,
-		Type   :   "incident",
-		Status   : IncidentStatusAcknowledged,
+		ID:     incidentID,
+		Type:   typeIncident,
+		Status: IncidentStatusAcknowledged,
 	}
 
 	level.Debug(c.logger).Log("msg", "acknowledging incident", "incidentID", incident.ID, "userEmail", user.Email)
@@ -160,11 +161,11 @@ func (c *PagerdutyClient) AddActualAcknowledgerAsNoteToIncident(incidentID, actu
 		User: pagerduty.APIObject{
 			ID:      c.defaultUser.ID,
 			Type:    typeUserReference,
-			Summary: c.defaultUser.Email,//as we use api key which is not bound to a user, we need to give the email and not c.defaultUser.Summary,
+			Summary: c.defaultUser.Email, //as we use api key which is not bound to a user, we need to give the email and not c.defaultUser.Summary,
 			Self:    c.defaultUser.Self,
 			HTMLURL: c.defaultUser.HTMLURL,
 		},
-		Content: fmt.Sprintf("Incident was acknowledged on behalf of %s. time: %s", actualAcknowledger, now.String()),
+		Content:   fmt.Sprintf("Incident was acknowledged on behalf of %s. time: %s", actualAcknowledger, now.String()),
 		CreatedAt: now.String(),
 	}
 

@@ -25,9 +25,12 @@ import (
 	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/bot"
 	"github.com/sapcc/pulsar/pkg/config"
-	_ "github.com/sapcc/pulsar/pkg/slack"
 	"github.com/sapcc/pulsar/pkg/util"
+	"github.com/sapcc/pulsar/pkg/version"
 	"github.com/spf13/cobra"
+
+	// Load all slack plugins.
+	_ "github.com/sapcc/pulsar/pkg/slack"
 )
 
 const rootCmdLongUsage = "Pulsar bot mode"
@@ -40,6 +43,7 @@ func New() *cobra.Command {
 		Short:        "Slack bot mode",
 		Long:         rootCmdLongUsage,
 		SilenceUsage: true,
+		Version:      version.Print(),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger := util.NewLogger()
 

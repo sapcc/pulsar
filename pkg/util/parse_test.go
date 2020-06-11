@@ -26,8 +26,8 @@ import (
 
 func TestParseClusterFromString(t *testing.T) {
 	stimuli := map[string][]string{
-		"[CRITICAL - 2] [LA-BR-1] ManyPodsNotReadyOnNode - Less then 75% of pods ready on node": {"la-br-1"},
-		"[RESOLVED] [LA-BR-1] OpenstackNovaDatapathDown - Datapath nova metadata is down": {"la-br-1"},
+		"[CRITICAL - 2] [LA-BR-1] ManyPodsNotReadyOnNode - Less then 75% of pods ready on node":                         {"la-br-1"},
+		"[RESOLVED] [LA-BR-1] OpenstackNovaDatapathDown - Datapath nova metadata is down":                               {"la-br-1"},
 		"[CRITICAL] [S-LA-BR-1] InfrastructurePrometheusFederationFailed - Infrastructure Prometheus s-la-br-1 is down": {"s-la-br-1"},
 	}
 

@@ -63,7 +63,7 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		user = a.pdClient.GetDefaultUser()
 	}
 
-	if len(message.OriginalMessage.Attachments) == 0 ||  message.OriginalMessage.Attachments[0].Text == "" {
+	if len(message.OriginalMessage.Attachments) == 0 || message.OriginalMessage.Attachments[0].Text == "" {
 		return errors.New("slack message structure doesn't fit")
 	}
 
