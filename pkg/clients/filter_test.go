@@ -20,7 +20,7 @@ func TestFilterIncidents(t *testing.T) {
 	}
 
 	f := &Filter{
-		Clusters:  []string{"eu-de-1"},
+		Clusters:  []string{"eu-de-2"},
 		Alertname: "VVOLDatastoreNotAccessibleFromHost",
 	}
 
