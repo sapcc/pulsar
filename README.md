@@ -1,5 +1,7 @@
-pulsar
+Pulsar
 -------------
+
+[![Build Status](https://travis-ci.org/sapcc/pulsar.svg?branch=master)](https://travis-ci.org/sapcc/pulsar)
 
 Interactive Slack bot for [Supernova](https://github.com/sapcc/supernova).
 
@@ -30,3 +32,7 @@ export PAGERDUTY_AUTH_TOKEN = "superSecret!"
 
 Commands are independent plugins loaded during start and can be found in the [slack package](./pkg/slack).
 See the [example command](./pkg/slack/hello.go).
+
+### Release
+
+Increment the [version](VERSION) and run `make release`.
