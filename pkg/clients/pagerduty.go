@@ -23,18 +23,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/pkg/errors"
-	"github.com/sapcc/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/config"
 	"github.com/sapcc/pulsar/pkg/util"
 )
 
 const (
-	statusAcknowledged = "acknowledged"
-	statusTriggered    = "triggered"
-	typeUserReference  = "user_reference"
+	IncidentStatusAcknowledged = "acknowledged"
+	IncidentStatusTriggered    = "triggered"
+	typeUserReference          = "user_reference"
+	typeIncident               = "incident"
 )
 
 // PagerdutyClient wraps the pagerduty client.
@@ -100,10 +101,7 @@ func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) 
 // ListIncidents returns a list of incidents matching the given filter or an error.
 func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error) {
 	o := pagerduty.ListIncidentsOptions{
-		Statuses: []string{statusTriggered},
-		APIListObject: pagerduty.APIListObject{
-			Limit: f.GetLimit(),
-		},
+		Statuses: []string{IncidentStatusTriggered, IncidentStatusAcknowledged},
 	}
 
 	if f != nil {
@@ -140,59 +138,38 @@ func (c *PagerdutyClient) GetIncident(f *Filter) (*pagerduty.Incident, error) {
 }
 
 // AcknowledgeIncident sets a incident to status acknowledged and assigns the given user to it.
-func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty.User) error {
-	incident, err := c.pagerdutyClient.GetIncident(incidentID)
-	if err != nil {
-		return err
-	}
-
-	// fall back to default user.
+func (c *PagerdutyClient) AcknowledgeIncident(incidentID string, user *pagerduty.User) (*pagerduty.ListIncidentsResponse, error) {
 	if user == nil {
 		user = c.defaultUser
 	}
 
-	now := time.Now().UTC()
-
-	userAPIObject := pagerduty.APIObject{
-		Type:    typeUserReference,
-		ID:      user.ID,
-		Summary: user.Summary,
-		HTMLURL: user.HTMLURL,
-		Self:    user.Self,
+	incident := pagerduty.ManageIncidentsOptions{
+		ID:     incidentID,
+		Type:   typeIncident,
+		Status: IncidentStatusAcknowledged,
 	}
 
-	incident.Status = statusAcknowledged
-
-	incident.Acknowledgements = append(incident.Acknowledgements, pagerduty.Acknowledgement{
-		At:           now.String(),
-		Acknowledger: userAPIObject,
-	})
-
-	incident.Assignments = append(incident.Assignments, pagerduty.Assignment{
-		At:       now.String(),
-		Assignee: userAPIObject,
-	})
-
 	level.Debug(c.logger).Log("msg", "acknowledging incident", "incidentID", incident.ID, "userEmail", user.Email)
-	return c.pagerdutyClient.ManageIncidents(user.Email, []pagerduty.Incident{*incident})
+	return c.pagerdutyClient.ManageIncidents(user.Email, []pagerduty.ManageIncidentsOptions{incident})
 }
 
 // AddActualAcknowledgerAsNoteToIncident adds a note containing the actual acknowledger to the given incident.
-func (c *PagerdutyClient) AddActualAcknowledgerAsNoteToIncident(incidentID, actualAcknowledger string) error {
+func (c *PagerdutyClient) AddActualAcknowledgerAsNoteToIncident(incidentID, actualAcknowledger string) (*pagerduty.IncidentNote, error) {
 	now := time.Now().UTC()
 	note := pagerduty.IncidentNote{
-		CreatedAt: now.String(),
+		ID: incidentID,
 		User: pagerduty.APIObject{
 			ID:      c.defaultUser.ID,
 			Type:    typeUserReference,
-			Summary: c.defaultUser.Summary,
+			Summary: c.defaultUser.Email, //as we use api key which is not bound to a user, we need to give the email and not c.defaultUser.Summary,
 			Self:    c.defaultUser.Self,
 			HTMLURL: c.defaultUser.HTMLURL,
 		},
-		Content: fmt.Sprintf("Incident was acknowledged on behalf of %s. time: %s", actualAcknowledger, now.String()),
+		Content:   fmt.Sprintf("Incident was acknowledged on behalf of %s. time: %s", actualAcknowledger, now.String()),
+		CreatedAt: now.String(),
 	}
 
-	return c.pagerdutyClient.CreateIncidentNote(incidentID, c.defaultUser.Email, note)
+	return c.pagerdutyClient.CreateIncidentNoteWithResponse(incidentID, note)
 }
 
 // ListTodaysOnCalls returns the OnCall users for today.

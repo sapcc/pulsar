@@ -20,8 +20,8 @@
 package api
 
 import (
+	"errors"
 	"fmt"
-
 	"github.com/go-kit/kit/log/level"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/clients"
@@ -63,14 +63,33 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		user = a.pdClient.GetDefaultUser()
 	}
 
-	f := &clients.Filter{}
-	f.ClusterFilterFromText(message.OriginalMessage.Text)
-	f.AlertnameFilterFromText(message.OriginalMessage.Text)
-
-	incident, err := a.pdClient.GetIncident(f)
-	if err != nil {
-		return err
+	if len(message.OriginalMessage.Attachments) == 0 || message.OriginalMessage.Attachments[0].Text == "" {
+		return errors.New("slack message structure doesn't fit")
 	}
 
-	return a.pdClient.AcknowledgeIncident(incident.ID, user)
+	f := &clients.Filter{}
+	for _, msgAttachment := range message.OriginalMessage.Attachments {
+		if f.ClusterFilterFromText(msgAttachment.Text) != nil ||
+			f.AlertnameFilterFromText(msgAttachment.Text) != nil {
+			return errors.New("slack message parsing for alertname and cluster failed")
+		}
+
+		incident, err := a.pdClient.GetIncident(f)
+		if err != nil {
+			return err
+		}
+
+		if incident.Status == clients.IncidentStatusTriggered {
+			_, err = a.pdClient.AcknowledgeIncident(incident.Id, user)
+			if err != nil {
+				return err
+			}
+		}
+
+		if user.ID == a.pdClient.GetDefaultUser().ID {
+			_, err = a.pdClient.AddActualAcknowledgerAsNoteToIncident(incident.Id, slackUser.Name)
+			return err
+		}
+	}
+	return nil
 }

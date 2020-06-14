@@ -125,7 +125,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 
 	var message slack.InteractionCallback
 	if err := json.Unmarshal([]byte(jsonBody), &message); err != nil {
-		level.Error(a.logger).Log("msg", "error unmarshalling json body", "err", err.Error())
+		level.Error(a.logger).Log("msg", "error unmarshalling slack json body", "err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -24,12 +24,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sapcc/go-pagerduty"
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/sapcc/pulsar/pkg/util"
 )
 
 // regionAlertnameRegex is used to find the region and alertname from an incident text
-const regionAlertnameRegex = `.*\s\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\]\s(?P<alertname>.+?)\s\-.*`
+const regionAlertnameRegex = `.*[\s\*]+\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\][\s\*]+(?P<alertname>.+?)\s\-.*`
 
 // parseRegionAndAlertnameFromText does what it says.
 // It's meant as a workaround until Fingerprints for Prometheus alerts are supported.
@@ -61,7 +61,7 @@ func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
 	return util.NormalizeString(region), util.NormalizeString(alertname), nil
 }
 
-func containsUser(userList []*pagerduty.User, user pagerduty.APIObject) bool {
+func containsUser(userList []*pagerduty.User, user pagerduty.User) bool {
 	for _, u := range userList {
 		if u.ID == user.ID {
 			return true

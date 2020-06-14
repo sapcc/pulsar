@@ -3,7 +3,7 @@ package clients
 import (
 	"testing"
 
-	"github.com/sapcc/go-pagerduty"
+	"github.com/PagerDuty/go-pagerduty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +20,7 @@ func TestFilterIncidents(t *testing.T) {
 	}
 
 	f := &Filter{
-		Clusters:  []string{"eu-de-1"},
+		Clusters:  []string{"eu-de-2"},
 		Alertname: "VVOLDatastoreNotAccessibleFromHost",
 	}
 
