@@ -25,7 +25,7 @@ build: bin/linux/$(BINARY)
 .PHONY: tests
 tests:
 	@if s="$$(gofmt -s -l *.go pkg 2>/dev/null)" && test -n "$$s"; then printf ' => %s\n%s\n' gofmt  "$$s"; false; fi
-	DEBUG=1 && go test -v github.com/sapcc/pulsar/pkg/...
+	DEBUG=1 && go test -v github.com/sapcc/pulsar/pkg/... | grep -v "no test files"
 
 push: VERSION=$(shell cat VERSION)
 push: build
