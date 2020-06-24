@@ -50,7 +50,7 @@ git-push-tag:
 
 git-tag-release: VERSION=$(shell cat VERSION)
 git-tag-release: check-release-version
-	git tag --annotate ${VERSION} --message "autoscaler ${VERSION}"
+	git tag --annotate ${VERSION} --message "pulsar ${VERSION}"
 
 check-release-version: VERSION=$(shell cat VERSION)
 check-release-version:
