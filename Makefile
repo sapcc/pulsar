@@ -21,8 +21,8 @@ bin/%/$(BINARY): $(GOFILES) Makefile
 		-ldflags "-s -w -X github.com/sapcc/pulsar/pkg/version.Revision=$(GIT_REVISION) -X github.com/sapcc/pulsar/pkg/version.Branch=$(GIT_BRANCH) -X github.com/sapcc/pulsar/pkg/version.BuildDate=$(BUILD_DATE) -X github.com/sapcc/pulsar/pkg/version.Version=$(VERSION)"\
 		-o bin/$*/$(BINARY) main.go
 
-build: VERSION=$(shell cat VERSION)
-build: bin/linux/$(BINARY)
+docker-build: VERSION=$(shell cat VERSION)
+docker-build: bin/linux/$(BINARY)
 	docker build -t $(IMAGE):$(VERSION) .
 
 .PHONY: tests
@@ -30,9 +30,11 @@ tests:
 	@if s="$$(gofmt -s -l *.go pkg 2>/dev/null)" && test -n "$$s"; then printf ' => %s\n%s\n' gofmt  "$$s"; false; fi
 	DEBUG=1 && go test -v github.com/sapcc/pulsar/pkg/... | grep -v "no test files"
 
-push: VERSION=$(shell cat VERSION)
-push: build
-	docker push $(IMAGE):$(VERSION)
+docker-push: VERSION=$(shell cat VERSION)
+docker-push:
+	docker push $(IMAGE):$(VERSION) &&\
+	docker tag $(IMAGE):$(VERSION) $(IMAGE):latest &&\
+	docker push	$(IMAGE):latest
 
 .PHONY: clean
 clean:
@@ -57,5 +59,5 @@ check-release-version:
 		echo "Tag [${VERSION}] already exists. Please check the working copy."; git diff . ; exit 1;\
 	fi
 
-relase: VERSION=$(shell cat VERSION)
-release: git-tag-release git-push-tag push
+release: VERSION=$(shell cat VERSION)
+release: git-tag-release git-push-tag docker-build docker-push
