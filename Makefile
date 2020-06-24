@@ -9,14 +9,17 @@ GOFILES  := $(addsuffix /*.go,$(PACKAGES))
 GOFILES  := $(wildcard $(GOFILES))
 
 .PHONY: all
-all: bin/$(GOOS)/$(BINARY)
+all: vendor bin/$(GOOS)/$(BINARY)
 
 bin/%/$(BINARY): BUILD_DATE= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 bin/%/$(BINARY): GIT_REVISION= $(shell git rev-parse --short HEAD)
 bin/%/$(BINARY): GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 bin/%/$(BINARY): VERSION=$(shell cat VERSION)
 bin/%/$(BINARY): $(GOFILES) Makefile
-	go build -mod vendor -ldflags "-s -w -X github.com/sapcc/pulsar/pkg/version.Revision=$(GIT_REVISION) -X github.com/sapcc/pulsar/pkg/version.Branch=$(GIT_BRANCH) -X github.com/sapcc/pulsar/pkg/version.BuildDate=$(BUILD_DATE) -X github.com/sapcc/pulsar/pkg/version.Version=$(VERSION)" -o bin/$*/$(BINARY) main.go
+	go build\
+		-mod vendor\
+		-ldflags "-s -w -X github.com/sapcc/pulsar/pkg/version.Revision=$(GIT_REVISION) -X github.com/sapcc/pulsar/pkg/version.Branch=$(GIT_BRANCH) -X github.com/sapcc/pulsar/pkg/version.BuildDate=$(BUILD_DATE) -X github.com/sapcc/pulsar/pkg/version.Version=$(VERSION)"\
+		-o bin/$*/$(BINARY) main.go
 
 build: VERSION=$(shell cat VERSION)
 build: bin/linux/$(BINARY)

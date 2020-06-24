@@ -1,6 +1,6 @@
 apiVersion: v2
 name: pulsar
-description: A Helm chart for the pulsar, the supernova slack bot.
+description: A Helm chart for the slack bot called pulsar.
 type: application
-version: 0.1.3
-appVersion: 1.0.0
+version: 1.0.1
+appVersion: 1.0.1
