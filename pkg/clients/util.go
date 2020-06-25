@@ -29,7 +29,7 @@ import (
 )
 
 // regionAlertnameRegex is used to find the region and alertname from an incident text
-const regionAlertnameRegex = `.*[\s\*]+\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\][\s\*]+(?P<alertname>.+?)\s\-.*`
+const regionAlertnameRegex = `.*[\s\*]+\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|staging)\][\s\*]+(?:[*<]+https[=?#.\-:\w\d/]+[|](?P<alertnameLink>.*?)>|(?P<alertname>.+?))[*\s]+\-.*`
 
 // parseRegionAndAlertnameFromText does what it says.
 // It's meant as a workaround until Fingerprints for Prometheus alerts are supported.
@@ -53,6 +53,9 @@ func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
 
 	region, regionOK := matchMap["region"]
 	alertname, alertnameOK := matchMap["alertname"]
+	if (alertname == "") {
+		alertname, alertnameOK = matchMap["alertnameLink"]
+	}
 
 	if !regionOK || !alertnameOK {
 		return "", "", fmt.Errorf("pagerduty incident summary doesn not contain alertname and/or region: '%s'", summary)

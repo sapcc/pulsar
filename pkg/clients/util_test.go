@@ -27,30 +27,30 @@ import (
 )
 
 const (
-	summaryText                      = "[#1594] \n [EU-DE-1] OpenstackLbaasApiFlapping - lbaas API flapping\n"
-	summaryTextWithLink              = "[#1598] \n [AP-SA-1] BaremetalIronicSensorCritical - Sensor Critical for instance node009r-bm020.cc.ap-sa-1.cloud.sap\n"
-	summaryTextMultiple              = "[#2130] \n [7 Alerts] [EU-DE-2] VVOLDatastoreNotAccessibleFromHost - vVOL Datastore accessibility check from host\n"
-	summaryTextMultipleNoDescription = "[#2144] \n [3 Alerts] [EU-NL-1] OpenstackNeutronDatapathDown - \n"
-)
+	slackText          				= "\n*[CRITICAL]* *[ap-sa-1]* VCenterRedundancyLostHAPolicyFaulty - VC vc-b-0.cc.eu-nl-1.cloud.sap has a faulty AdmissionControlPolicy for cluster XYZ, failover will not work.\n:fire: VC ... \n"
+	slackTextWithLink 				= "\n*[CRITICAL]* *[AP-JP-1]* *<https://alertmanager.somewhere.cloud.com/#/alerts?receiver=slack_api_critical|OpenstackDatapathDown>* - Blackbox datapath test\n:fire: Datapath maia_metrics is down for 15 times in a row. ... \n"
+	slackTextMulti					= "\n*[CRITICAL - 6]* *[EU-RU-1]* NetworkApicProcessMaxMemoryUsedCritical - \n:fire: Max memory 2.817073152e+09 used by process nfm/topology/pod-1/node-000/sys/procsys/proc-10560 on apic host .. \n"
+	slackTextMultipleNoDescription 	= "\n*[CRITICAL - 6]* *[EU-RU-1]* NetworkApicProcessMaxMemoryUsedCritical - "
+	)
 
 func TestParseAlertFromSlackMessageText(t *testing.T) {
 	// mapping of input string to expected result map
 	tests := map[string]map[string]string{
-		summaryText: {
-			"alertname": "OpenstackLbaasApiFlapping",
-			"region":    "eu-de-1",
-		},
-		summaryTextWithLink: {
-			"alertname": "BaremetalIronicSensorCritical",
+		slackText: {
+			"alertname": "VCenterRedundancyLostHAPolicyFaulty",
 			"region":    "ap-sa-1",
 		},
-		summaryTextMultiple: {
-			"alertname": "VVOLDatastoreNotAccessibleFromHost",
-			"region":    "eu-de-2",
+		slackTextWithLink: {
+			"alertname": "OpenstackDatapathDown",
+			"region":    "AP-JP-1",
 		},
-		summaryTextMultipleNoDescription: {
-			"alertname": "OpenstackNeutronDatapathDown",
-			"region":    "eu-nl-1",
+		slackTextMulti: {
+			"alertname": "NetworkApicProcessMaxMemoryUsedCritical",
+			"region":    "EU-RU-1",
+		},
+		slackTextMultipleNoDescription: {
+			"alertname": "NetworkApicProcessMaxMemoryUsedCritical",
+			"region":    "EU-RU-1",
 		},
 	}
 
