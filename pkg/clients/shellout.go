@@ -47,7 +47,7 @@ func NewCommand(cmd string, defaultArgs ...string) (*Command, error) {
 
 func (c *Command) verify() error {
 	err := exec.Command(c.cmd, "-v").Run()
-	if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not found") {
+	if err !=nil && ( strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "not found")) {
 		return errNotFound
 	}
 	return nil
