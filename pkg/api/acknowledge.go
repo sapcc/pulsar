@@ -52,14 +52,14 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 
 	slackUser, err := a.slackClient.GetUserByID(message.User.ID)
 	if err != nil {
-		level.Error(a.logger).Log("msg", "cannot find slack user", "err", err.Error())
+		_ = level.Error(a.logger).Log("msg", "cannot find slack user", "err", err.Error())
 		return err
 	}
 
 	// Find the corresponding pagerduty user.
 	user, err := a.pdClient.GetUserByEmail(slackUser.Profile.Email)
 	if err != nil {
-		level.Info(a.logger).Log("msg", "failed to find pagerduty user. falling back to default user", "err", err.Error())
+		_ = level.Info(a.logger).Log("msg", "failed to find pagerduty user. falling back to default user", "err", err.Error())
 		user = a.pdClient.GetDefaultUser()
 	}
 

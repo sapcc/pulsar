@@ -83,13 +83,15 @@ func (a *Authorizer) Run(stop <-chan struct{}) {
 	defer ticker.Stop()
 
 	go func() {
-		select {
-		case <-ticker.C:
-			if err := a.getAuthorizedUserIDs(); err != nil {
-				level.Error(a.logger).Log("msg", "failed to refresh authorized users", "err", err.Error())
+		for{
+			select {
+			case <-ticker.C:
+				if err := a.getAuthorizedUserIDs(); err != nil {
+					level.Error(a.logger).Log("msg", "failed to refresh authorized users", "err", err.Error())
+				}
+			case <-stop:
+				return
 			}
-		case <-stop:
-			return
 		}
 	}()
 
