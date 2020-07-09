@@ -83,7 +83,7 @@ func (a *Authorizer) Run(stop <-chan struct{}) {
 	defer ticker.Stop()
 
 	go func() {
-		for  {
+		for {
 			select {
 			case <-ticker.C:
 				if err := a.getAuthorizedUserIDs(); err != nil {
