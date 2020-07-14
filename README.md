@@ -12,6 +12,10 @@ Interactive Slack bot for [Supernova](https://github.com/sapcc/supernova).
 * List current Pagerduty on-call staff
 * List Kubernetes nodes in a cluster 
 
+## Installation
+
+The [Pulsar Helm chart](https://github.com/sapcc/helm-charts/tree/master/global/pulsar) can be used for installation.
+
 ## Usage
 
 The following secrets are provided via environment variables and are obtained after creating the Bot & enabling interactive messages in Slack via [this page](https://api.slack.com/apps).
