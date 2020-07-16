@@ -102,8 +102,8 @@ func (c *PagerdutyClient) GetUserByEmail(email string) (*pagerduty.User, error) 
 func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error) {
 	o := pagerduty.ListIncidentsOptions{
 		Statuses: []string{IncidentStatusTriggered, IncidentStatusAcknowledged},
-		Since: time.Now().AddDate(0,0,-1).Format(time.RFC3339),
-		SortBy: "created_at:desc",
+		Since:    time.Now().AddDate(0, 0, -1).Format(time.RFC3339),
+		SortBy:   "created_at:desc",
 	}
 
 	if f != nil {
