@@ -21,6 +21,7 @@ RUN make all
 
 FROM alpine:3.10
 MAINTAINER Arno Uhlig <arno.uhlig@sap.com>
+LABEL source_repository="https://github.com/sapcc/pulsar"
 
 RUN apk add --no-cache ca-certificates curl tini bash
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl && kubectl version --client
