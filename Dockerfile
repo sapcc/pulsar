@@ -1,4 +1,4 @@
-FROM golang:1.13.4-alpine3.10 as builder
+FROM golang:1.19-alpine3.17 as builder
 RUN apk add --no-cache make git
 
 WORKDIR /go/src/github.com/sapcc/pulsar
@@ -19,8 +19,9 @@ COPY VERSION VERSION
 COPY .git/ .git/
 RUN make all
 
-FROM alpine:3.10
-MAINTAINER Arno Uhlig <arno.uhlig@sap.com>
+FROM alpine:3.17
+LABEL org.opencontainers.image.authors="Tilo Geissler <tilo.geissler@sap.com>"
+LABEL org.opencontainers.image.authors="Bassel Zeidan <bassel.zeidan@sap.com>"
 LABEL source_repository="https://github.com/sapcc/pulsar"
 
 RUN apk add --no-cache ca-certificates curl tini bash

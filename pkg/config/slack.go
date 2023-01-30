@@ -34,6 +34,8 @@ const (
 	kubernetesAdminGroupNames = "SLACK_KUBERNETES_ADMIN_GROUP_NAMES"
 	accessToken               = "SLACK_ACCESS_TOKEN"
 	verificationToken         = "SLACK_VERIFICATION_TOKEN"
+    channelIdsListForPdSync   = "SLACK_CHANNELS_ID_LIST"
+    channelMessageHistoryScanCount = "SLACK_CHANNELS_MESSAGE_HISTORY_SCAN_COUNT"
 	apiPort                   = "API_PORT"
 	apiHost                   = "API_HOST"
 )
@@ -66,6 +68,12 @@ type SlackConfig struct {
 
 	// APIHost is the host on which the API is exposed.
 	APIHost string
+
+    // Slack Channel Ids for PD incident sync
+    ChannelIdsListForPdSync []string
+
+    // Slack Channel History Message Count which will be scanned 
+    ChannelMessageHistoryScanCount int
 }
 
 func NewSlackConfigFromEnv() (*SlackConfig, error) {
@@ -79,11 +87,18 @@ func NewSlackConfigFromEnv() (*SlackConfig, error) {
 		host = h
 	}
 
+    defaultChannelMessageHistoryScanCount := 20
+    if msc, err := strconv.Atoi(os.Getenv(channelMessageHistoryScanCount)); err == nil {
+        defaultChannelMessageHistoryScanCount = msc
+    }
+
 	c := &SlackConfig{
 		BotToken:                  os.Getenv(botToken),
 		BotID:                     os.Getenv(botID),
 		AccessToken:               os.Getenv(accessToken),
 		VerificationToken:         os.Getenv(verificationToken),
+        ChannelIdsListForPdSync:   strings.Split(os.Getenv(channelIdsListForPdSync), ","),
+        ChannelMessageHistoryScanCount: defaultChannelMessageHistoryScanCount,
 		AuthorizedUserGroupNames:  strings.Split(os.Getenv(authorizedUserGroupNames), ","),
 		KubernetesUserGroupNames:  strings.Split(os.Getenv(kubernetesUserGroupNames), ","),
 		KubernetesAdminGroupNames: strings.Split(os.Getenv(kubernetesAdminGroupNames), ","),
@@ -109,5 +124,9 @@ func (c *SlackConfig) validate() error {
 	if c.VerificationToken == "" {
 		return fmt.Errorf("missing %s", verificationToken)
 	}
+    if len(c.ChannelIdsListForPdSync) == 0 {
+        return fmt.Errorf("missing or empty %s", verificationToken)
+    }
+
 	return nil
 }

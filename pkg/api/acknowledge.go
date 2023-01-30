@@ -22,7 +22,8 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/go-kit/kit/log/level"
+
+	"github.com/go-kit/log/level"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/clients"
 )
@@ -30,10 +31,10 @@ import (
 // acknowledge will:
 // 1. open a slack thread noting the acknowledger (slack user) and time
 // 2. add an emoji to the original slack message with the alert to indicate it's being worked on
-// 3. search and acknowledge the corresponding incident in pagerduty to avoid further esacalation (call, etc.)
+// 3. search and acknowledge the corresponding incident in pagerduty to avoid further escalation (call, etc.)
 func (a *API) acknowledge(message slack.InteractionCallback) error {
 	// Post the message.
-	if _, _, err := a.slackClient.PostMessage(
+	if _, _, err := a.slackBotClient.PostMessage(
 		message.Channel.ID,
 		slack.MsgOptionText(fmt.Sprintf(acknowledgeString, message.User.ID), false),
 		slack.MsgOptionTS(message.OriginalMessage.Timestamp),
@@ -42,7 +43,7 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 	}
 
 	// Add reaction emoji to original message.
-	if err := a.slackClient.AddReactionToMessage(
+	if err := a.slackBotClient.AddReactionToMessage(
 		message.Channel.ID,
 		message.OriginalMessage.Timestamp,
 		emojiFirefighter,
@@ -50,7 +51,7 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		return err
 	}
 
-	slackUser, err := a.slackClient.GetUserByID(message.User.ID)
+	slackUser, err := a.slackBotClient.GetUserByID(message.User.ID)
 	if err != nil {
 		level.Error(a.logger).Log("msg", "cannot find slack user", "err", err.Error())
 		return err
@@ -80,14 +81,14 @@ func (a *API) acknowledge(message slack.InteractionCallback) error {
 		}
 
 		if incident.Status == clients.IncidentStatusTriggered {
-			_, err = a.pdClient.AcknowledgeIncident(incident.Id, user)
+			_, err = a.pdClient.AcknowledgeIncident(incident.ID, user)
 			if err != nil {
 				return err
 			}
 		}
 
 		if user.ID == a.pdClient.GetDefaultUser().ID {
-			_, err = a.pdClient.AddActualAcknowledgerAsNoteToIncident(incident.Id, slackUser.Name)
+			_, err = a.pdClient.AddActualAcknowledgerAsNoteToIncident(incident.ID, slackUser.Name)
 			return err
 		}
 	}

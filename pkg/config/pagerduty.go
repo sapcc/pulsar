@@ -22,17 +22,20 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
 	authToken    = "PAGERDUTY_AUTH_TOKEN"
 	defaultEmail = "PAGERDUTY_DEFAULT_EMAIL"
+    filter_services = "PAGERDUTY_SERVICES_ID_LIST"
 )
 
 // PagerdutyConfig ...
 type PagerdutyConfig struct {
-	AuthToken,
+	AuthToken string
 	DefaultEmail string
+    FilterServices []string
 }
 
 // NewPagerdutyConfigFromEnv returns a new PagerdutyConfig or an error.
@@ -40,6 +43,7 @@ func NewPagerdutyConfigFromEnv() (*PagerdutyConfig, error) {
 	c := &PagerdutyConfig{
 		AuthToken:    os.Getenv(authToken),
 		DefaultEmail: os.Getenv(defaultEmail),
+        FilterServices: strings.Split(os.Getenv(filter_services), ","),
 	}
 
 	return c, c.validate()

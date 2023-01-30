@@ -39,7 +39,7 @@ func (f *Filter) ClusterFilterFromText(theString string) error {
 
 // AlertnameFilterFromText takes a string potentially containing an alertname and creates the filter accordingly.
 func (f *Filter) AlertnameFilterFromText(theString string) error {
-	_, alertname, err := parseRegionAndAlertnameFromText(theString)
+	_, alertname, err := ParseRegionAndAlertnameFromText(theString)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (f *Filter) FilterIncidents(incidents []pagerduty.Incident) []pagerduty.Inc
 	res := make([]pagerduty.Incident, 0)
 
 	for _, inc := range incidents {
-		region, alertname, err := parseRegionAndAlertnameFromText(inc.Summary)
+		region, alertname, err := ParseRegionAndAlertnameFromText(inc.Summary)
 		if err != nil {
 			continue
 		}

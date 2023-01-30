@@ -104,12 +104,14 @@ func (c *PagerdutyClient) ListIncidents(f *Filter) ([]pagerduty.Incident, error)
 		Statuses: []string{IncidentStatusTriggered, IncidentStatusAcknowledged},
 		Since:    time.Now().AddDate(0, 0, -1).Format(time.RFC3339),
 		SortBy:   "created_at:desc",
+        ServiceIDs: c.cfg.FilterServices,
 	}
 
 	if f != nil {
 		level.Debug(c.logger).Log("msg", "listing pagerduty incident", "filter", f.ToString())
 	}
 
+    // TODD replace deprecated function usage
 	incidentList, err := c.pagerdutyClient.ListIncidents(o)
 	if err != nil {
 		return nil, err

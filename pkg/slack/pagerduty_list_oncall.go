@@ -49,7 +49,7 @@ func (l *pagerdutyListOnCall) Init() error {
 	}
 	l.pagerdutyClient = pdCli
 
-	sCli, err := clients.NewSlackClientFromEnv()
+	sCli, err := clients.NewSlackBotClientFromEnv()
 	if err != nil {
 		return err
 	}

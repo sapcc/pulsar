@@ -34,7 +34,7 @@ const regionAlertnameRegex = `.*[\s\*]+\[(?P<region>[\w-]*\w{2}-\w{2}-\d|admin|s
 // parseRegionAndAlertnameFromText does what it says.
 // It's meant as a workaround until Fingerprints for Prometheus alerts are supported.
 // Returns an error if neither alertname nor region can be found.
-func parseRegionAndAlertnameFromText(summary string) (string, string, error) {
+func ParseRegionAndAlertnameFromText(summary string) (string, string, error) {
 	regionAlertnameRegex := regexp.MustCompile(regionAlertnameRegex)
 	matchMap := make(map[string]string)
 
