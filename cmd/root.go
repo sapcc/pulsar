@@ -63,7 +63,7 @@ func New() *cobra.Command {
 				return errors.Wrap(err, "error initializing bot")
 			}
 
-			// Start the API handling interactive messages.
+			// Start the API handling interactive messages and the incident sync job.
 			a, err := api.New(authorizer, cfg, logger)
 			if err != nil {
 				return errors.Wrap(err, "error initializing api")
@@ -71,6 +71,7 @@ func New() *cobra.Command {
 
 			go authorizer.Run(stop)
 			go a.Serve(stop)
+            go a.ServeIncidentSync(stop)
 			go b.ListenAndRespond(stop)
 
 			<-stop

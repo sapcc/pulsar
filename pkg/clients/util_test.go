@@ -55,7 +55,7 @@ func TestParseAlertFromSlackMessageText(t *testing.T) {
 	}
 
 	for stimuli, expectedMap := range tests {
-		region, alertname, err := parseRegionAndAlertnameFromText(stimuli)
+		region, alertname, err := ParseRegionAndAlertnameFromText(stimuli)
 		assert.NoError(t, err, "there should be no error parsing the slack message text: %s", stimuli)
 		assert.Equal(t, util.NormalizeString(expectedMap["alertname"]), alertname, "the alertname should be equal")
 		assert.Equal(t, util.NormalizeString(expectedMap["region"]), region, "the region should be equal")

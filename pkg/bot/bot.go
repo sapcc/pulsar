@@ -46,7 +46,7 @@ type Bot struct {
 
 // New returns a new Bot or an error.
 func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger) (*Bot, error) {
-	slackClient, err := clients.NewSlackClient(cfg, logger)
+	slackBotClient, err := clients.NewSlackBotClient(cfg, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger
 	b := &Bot{
 		authorizer: authorizer,
 		logger:     log.With(logger, "component", "bot"),
-		client:     slackClient,
-		rtmClient:  slackClient.NewRTM(),
+		client:     slackBotClient,
+		rtmClient:  slackBotClient.NewRTM(),
 		botID:      cfg.BotID,
 	}
 
@@ -83,7 +83,7 @@ func (b *Bot) ListenAndRespond(stop <-chan struct{}) {
 	for {
 		select {
 		case msg := <-b.rtmClient.IncomingEvents:
-			level.Debug(b.logger).Log("msg", "received slack event", "type", msg.Type)
+			//level.Debug(b.logger).Log("msg", "received slack event", "type", msg.Type)
 
 			switch e := msg.Data.(type) {
 			case *slack.MessageEvent:
@@ -100,7 +100,7 @@ func (b *Bot) ListenAndRespond(stop <-chan struct{}) {
 
 			case *slack.ConnectionErrorEvent:
 				level.Error(b.logger).Log("error connecting to slack", "err", e.Error())
-			}
+            }
 		}
 	}
 }

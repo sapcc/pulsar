@@ -36,13 +36,36 @@ type SlackClient struct {
 	logger log.Logger
 	cfg    *config.SlackConfig
 	client *slack.Client
+
 }
 
-// NewSlackClient returns a new SlackClient or an error.
-func NewSlackClient(cfg *config.SlackConfig, logger log.Logger) (*SlackClient, error) {
-	slackClient := slack.New(cfg.BotToken)
+// NewSlackClient returns a new SlackClient with Bot Token or an error.
+func NewSlackBotClient(cfg *config.SlackConfig, logger log.Logger) (*SlackClient, error) {
+    cfg, err := config.NewSlackConfigFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+    slackClient := slack.New(cfg.BotToken)
 	if slackClient == nil {
-		return nil, errors.New("failed to initialize slack client")
+		return nil, errors.New("failed to initialize slack client with bot token")
+	}
+
+	return &SlackClient{
+		cfg:    cfg,
+		logger: log.With(logger, "component", "slack"),
+		client: slackClient,
+	}, nil
+}
+// NewSlackClient returns a new SlackClient with Access token or an error.
+func NewSlackClient(cfg *config.SlackConfig, logger log.Logger) (*SlackClient, error) {
+    cfg, err := config.NewSlackConfigFromEnv()
+	if err != nil {
+		return nil, err
+	}
+    slackClient := slack.New(cfg.AccessToken)
+	if slackClient == nil {
+		return nil, errors.New("failed to initialize slack client with access token")
 	}
 
 	return &SlackClient{
@@ -53,13 +76,13 @@ func NewSlackClient(cfg *config.SlackConfig, logger log.Logger) (*SlackClient, e
 }
 
 // NewSlackClientFromEnv get's the configuration from the environment and returns a new SlackClient or an error.
-func NewSlackClientFromEnv() (*SlackClient, error) {
+func NewSlackBotClientFromEnv() (*SlackClient, error) {
 	cfg, err := config.NewSlackConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewSlackClient(cfg, util.NewLogger())
+	return NewSlackBotClient(cfg, util.NewLogger())
 }
 
 // NewRTM returns a new RTM client.
@@ -95,6 +118,15 @@ func (s *SlackClient) AddReactionToMessage(channel, timestamp, reaction string) 
 		return err
 	}
 	return nil
+}
+
+// gives the message history of a channel
+func (s *SlackClient) GetConversationHistory(channel string) (*slack.GetConversationHistoryResponse, error) {
+    history, err := s.client.GetConversationHistory(&slack.GetConversationHistoryParameters{ ChannelID: channel, Limit: s.cfg.ChannelMessageHistoryScanCount, Inclusive: true })
+	if err != nil {
+		return nil, err
+	}
+	return history, nil
 }
 
 func isErrAlreadyReacted(err error) bool {

@@ -22,19 +22,21 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/gorilla/mux"
 	"github.com/nlopes/slack"
 	"github.com/sapcc/pulsar/pkg/auth"
 	"github.com/sapcc/pulsar/pkg/clients"
 	"github.com/sapcc/pulsar/pkg/config"
+
+    "github.com/robfig/cron"
 )
 
 const (
@@ -44,12 +46,14 @@ const (
 	actionValueAcknowledge = "acknowledge"
 	acknowledgeString      = "Acknowledged by <@%s>"
 	emojiFirefighter       = "male-firefighter"
+    emojiPagerDuty         = "pagerduty"
 )
 
 // API ...
 type API struct {
 	authorizer  *auth.Authorizer
-	slackClient *clients.SlackClient
+	slackBotClient *clients.SlackClient
+    slackClient *clients.SlackClient
 	pdClient    *clients.PagerdutyClient
 	cfg         *config.SlackConfig
 	logger      log.Logger
@@ -57,7 +61,12 @@ type API struct {
 
 // New returns a new API or an error.
 func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger) (*API, error) {
-	slackClient, err := clients.NewSlackClientFromEnv()
+	slackBotClient, err := clients.NewSlackBotClient(cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
+    slackClient, err := clients.NewSlackClient(cfg, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +80,8 @@ func New(authorizer *auth.Authorizer, cfg *config.SlackConfig, logger log.Logger
 		logger:      log.With(logger, "component", "api"),
 		authorizer:  authorizer,
 		cfg:         cfg,
-		slackClient: slackClient,
+		slackBotClient: slackBotClient,
+        slackClient: slackClient,
 		pdClient:    pdClient,
 	}, nil
 }
@@ -94,6 +104,21 @@ func (a *API) Serve(stop <-chan struct{}) {
 	<-stop
 }
 
+// Incident sync cron
+func (a *API) ServeIncidentSync(stop <-chan struct{}) {
+
+    a.pd_slack_incidents_sync()
+	c := cron.New()
+    //c.AddFunc("*/10 * * * *", func() {
+    c.AddFunc("@every 5m", func() {
+        level.Info(a.logger).Log("msg","pagerduty incident sync run: ")
+        a.pd_slack_incidents_sync()
+    })
+    go c.Start()
+	<-stop
+	defer c.Stop()
+}
+
 func (a *API) home(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
@@ -107,7 +132,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf, err := ioutil.ReadAll(r.Body)
+	buf, err := io.ReadAll(r.Body)
 	if err != nil {
 		level.Error(a.logger).Log("msg", "error reading request body", "err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -116,7 +141,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 
 	jsonBody, err := url.QueryUnescape(string(buf))
 	if err != nil {
-		level.Error(a.logger).Log("msg", "error unescaping request body", "err", err.Error())
+		level.Error(a.logger).Log("msg", "error unescaped request body", "err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -137,7 +162,7 @@ func (a *API) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !a.authorizer.IsUserAuthorized(message.User.ID, auth.UserRoles.Base) {
-		level.Info(a.logger).Log("msg", "rejecting unauthorized user", "username", message.User.Name, "userid", message.User.ID)
+		level.Info(a.logger).Log("msg", "rejecting unauthorized user", "username", message.User.Name, "user id", message.User.ID)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

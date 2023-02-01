@@ -1,4 +1,5 @@
-Pulsar
+# Pulsar
+
 -------------
 
 [![Build Status](https://travis-ci.org/sapcc/pulsar.svg?branch=master)](https://travis-ci.org/sapcc/pulsar)
@@ -10,7 +11,7 @@ Interactive Slack bot for [Supernova](https://github.com/sapcc/supernova).
 * List Prometheus alerts and Pagerduty incidents
 * Acknowledge Pagerduty incidents
 * List current Pagerduty on-call staff
-* List Kubernetes nodes in a cluster 
+* List Kubernetes nodes in a cluster
 
 ## Installation
 
@@ -22,7 +23,7 @@ The following secrets are provided via environment variables and are obtained af
 
 ```yaml
 export SLACK_BOT_TOKEN = "topSecret!"
-export SLACK_BOT_ID = "supernova"                                     
+export SLACK_BOT_ID = "supernova"
 export SLACK_ACCESS_TOKEN = "superSecret?"
 export SLACK_VERIFICATION_TOKEN = "anotherSecret!"
 export SLACK_AUTHORIZED_USER_GROUP_NAMES = "slackGroup1,slackGroup2"
@@ -30,6 +31,9 @@ export SLACK_KUBERNETES_USER_GROUP_NAMES = "slackGroup3"
 export SLACK_KUBERNETES_ADMIN_GROUP_NAMES = "slackGroup4"
 export PAGERDUTY_DEFAULT_EMAIL = "defaultUser@pagerduty.com"
 export PAGERDUTY_AUTH_TOKEN = "superSecret!"
+export PAGERDUTY_SERVICES_ID_LIST = "superSecret!"
+export SLACK_CHANNELS_ID_LIST = "superSecret!"
+export SLACK_CHANNELS_MESSAGE_HISTORY_SCAN_COUNT = "optional integer, 5 to 20 is good / default is 10"
 ```
 
 ## Development
